@@ -1,7 +1,5 @@
--- Edit comment test
--- edit test 
 CREATE TABLE hospitals (
-	id string PRIMARY KEY,
+	id text PRIMARY KEY,
 	state text,
 	name text,
 	address text,
@@ -16,7 +14,7 @@ CREATE TABLE hospitals (
 
 
 CREATE TABLE hospital_beds (
-	hospital_id string REFERENCES hospitals (id),
+	hospital_id text REFERENCES hospitals (id),
 	record_date date,
 	adult_beds_available integer,
 	pediatric_beds_available integer,
@@ -30,7 +28,7 @@ CREATE TABLE hospital_beds (
 
 
 CREATE TABLE hospital_quality (
-	hospital_id string REFERENCES hospitals (id),
+	hospital_id text REFERENCES hospitals (id),
 	record_date date,
 	quality_rating integer,
 	PRIMARY KEY (hospital_id, record_date)
