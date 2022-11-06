@@ -35,3 +35,8 @@ CREATE TABLE hospital_quality (
 );
 
 
+/*Entities: hospitals, hostipal_bed, hospital_quality*/
+
+/*we choose them by checking how each variables are related to each other and see whether they can be connect by the same variable. */
+
+/*In order to avoid redundency, we design our databse with the help of heritage to insure that there are no repeated information stored.*/
