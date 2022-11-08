@@ -1,3 +1,4 @@
+-- This table provides the overall information for a hospital, such as the state it is located in, name, address, and other descriptive features
 CREATE TABLE hospitals (
 	id text PRIMARY KEY,
 	state text,
@@ -13,6 +14,7 @@ CREATE TABLE hospitals (
 );
 
 
+-- This table summarizes the number of available beds for each hospital by date
 CREATE TABLE hospital_beds (
 	hospital_id text REFERENCES hospitals (id),
 	record_date date,
@@ -27,6 +29,7 @@ CREATE TABLE hospital_beds (
 );
 
 
+-- This table provides an overall quality rating for a hospital which can be tracked at various dates
 CREATE TABLE hospital_quality (
 	hospital_id text REFERENCES hospitals (id),
 	record_date date,
