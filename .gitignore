@@ -1,0 +1,4 @@
+
+*.csv
+credentials.py
+__pycache__/credentials.cpython-39.pyc

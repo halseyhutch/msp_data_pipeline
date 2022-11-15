@@ -6,8 +6,8 @@ Though zip codes uniquely identify states, and it is possible for
 state codes to change, it has only happened once in history,
 and it is not likely to occur again. */
 CREATE TABLE hospitals (
-	id text PRIMARY KEY,
-	name text,
+	hospital_pk text PRIMARY KEY,
+	hospital_name text,
 	address text,
 	city text,
 	state text,
@@ -23,16 +23,17 @@ CREATE TABLE hospitals (
 /* This table summarizes the number of available beds
 for each hospital by date. */
 CREATE TABLE hospital_beds (
-	hospital_id text REFERENCES hospitals (id),
-	record_date date CHECK (record_date <= CURRENT_DATE),
-	adult_beds_available integer CHECK (adult_beds_available >= 0),
-	pediatric_beds_available integer CHECK (pediatric_beds_available >= 0),
-	adult_beds_used integer CHECK (adult_beds_used >= 0),
-	pediatric_beds_used integer CHECK (pediatric_beds_used >= 0),
-	icu_beds_used integer (icu_beds_used >= 0),
-	inpatients_beds_used_covid integer (inpatients_beds_used_covid >= 0),
-	staffed_adult_icu_patients_confirmed integer (staffed_adult_icu_patients_confirmed >= 0),
-	PRIMARY KEY (hospital_id, record_date)
+	hospital_pk text REFERENCES hospitals,
+	collection_week date CHECK (collection_week <= CURRENT_DATE),
+	all_adult_hospital_beds_7_day_avg numeric CHECK (all_adult_hospital_beds_7_day_avg >= 0),
+	all_pediatric_inpatient_beds_7_day_avg numeric CHECK (all_pediatric_inpatient_beds_7_day_avg >= 0),
+	all_adult_hospital_inpatient_bed_occupied_7_day_coverage numeric CHECK (all_adult_hospital_inpatient_bed_occupied_7_day_coverage >= 0),
+	all_pediatric_inpatient_bed_occupied_7_day_avg numeric CHECK (all_pediatric_inpatient_bed_occupied_7_day_avg >= 0),
+	total_icu_beds_7_day_avg numeric CHECK (total_icu_beds_7_day_avg >= 0),
+	icu_beds_used_7_day_avg numeric CHECK (icu_beds_used_7_day_avg >= 0),
+	inpatient_beds_used_covid_7_day_avg numeric CHECK (inpatient_beds_used_covid_7_day_avg >= 0),
+	staffed_icu_adult_patients_confirmed_covid_7_day_avg numeric CHECK (staffed_icu_adult_patients_confirmed_covid_7_day_avg >= 0),
+	PRIMARY KEY (hospital_pk, collection_week)
 );
 
 
@@ -43,8 +44,8 @@ Note that we put this data in a separate table from hospital_beds
 since it is highly unlikely to be contemporaneous. A single temporal table
 would have many more nulls than this alternative. */
 CREATE TABLE hospital_quality (
-	hospital_id text REFERENCES hospitals (id),
+	hospital_pk text REFERENCES hospitals,
 	record_date date CHECK (record_date <= CURRENT_DATE),
 	quality_rating integer,
-	PRIMARY KEY (hospital_id, record_date)
+	PRIMARY KEY (hospital_pk, record_date)
 );
