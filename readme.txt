@@ -1,1 +1,1 @@
-"""This project contains files that read, load, and update information for the HHS weekly data files and Hospital quality files. To run the files, enter python load-hhs.py 2022-01-04-hhs-data.csv"""
+"""This project contains files that read, load, and update information for the HHS weekly data files and Hospital quality files. For the Hospital quality, the files can be ran with 'python filename.py date datafile.csv', and for the HHS weekly data files using 'python load-hhs.py 2022-01-04-hhs-data.csv'."""
