@@ -1,0 +1,2 @@
+INSERT INTO hospitals (hospital_pk, hospital_name, address, city, state, zip, fips_code, lat, long)
+VALUES (%(hospital_pk)s, %(hospital_name)s, %(address)s, %(city)s, %(state)s, %(zip)s, %(fips_code)s, %(lat)s, %(long)s)

@@ -38,18 +38,18 @@ to_load = pd.read_csv(
         'hospital_name': 'str',
         'address': 'str',
         'city': 'str',
-        'zip': 'int64',
+        'zip': 'int',
         'fips_code': 'str',
         'geocoded_hospital_address': 'str',
         'collection_week': 'str',
-        'all_adult_hospital_beds_7_day_avg': 'float64',
-        'all_pediatric_inpatient_beds_7_day_avg': 'float64',
-        'all_adult_hospital_inpatient_bed_occupied_7_day_coverage': 'float64',
-        'all_pediatric_inpatient_bed_occupied_7_day_avg': 'float64',
-        'total_icu_beds_7_day_avg': 'float64',
-        'icu_beds_used_7_day_avg': 'float64',
-        'inpatient_beds_used_covid_7_day_avg': 'float64',
-        'staffed_icu_adult_patients_confirmed_covid_7_day_avg': 'float64'
+        'all_adult_hospital_beds_7_day_avg': 'float',
+        'all_pediatric_inpatient_beds_7_day_avg': 'float',
+        'all_adult_hospital_inpatient_bed_occupied_7_day_coverage': 'float',
+        'all_pediatric_inpatient_bed_occupied_7_day_avg': 'float',
+        'total_icu_beds_7_day_avg': 'float',
+        'icu_beds_used_7_day_avg': 'float',
+        'inpatient_beds_used_covid_7_day_avg': 'float',
+        'staffed_icu_adult_patients_confirmed_covid_7_day_avg': 'float'
     },
     parse_dates=['collection_week'],
     na_values=['-999999']
@@ -87,23 +87,54 @@ hp_to_insert = new_hospitals_data.merge(
 )
 
 # determine which hospitals need to be updated
-ed_long = existing_data.melt(id_vars='hospital_pk', value_name='old_val')
-nhd_long = new_hospitals_data.melt(id_vars='hospital_pk', value_name='new_val')
-hp_cmp = ed_long.merge(nhd_long, on=['hospital_pk', 'variable'])
-pks_to_update = hp_cmp.query("old_val != new_val").hospital_pk.unique()
-hp_to_update = new_hospitals_data.merge(pks_to_update, on='hospital_pk')
+hp_to_update = new_hospitals_data.merge(
+    existing_data.melt(
+        id_vars='hospital_pk',
+        value_name='old_val'
+    ).merge(
+        new_hospitals_data.melt(
+            id_vars='hospital_pk',
+            value_name='new_val'
+        ),
+        on=['hospital_pk', 'variable']
+    ).query(
+        "old_val != new_val"
+    ).hospital_pk.drop_duplicates(),
+    on='hospital_pk'
+)
 
+# insert new rows
 rows_inserted = 0
+with open('insert_hospitals_hhs.sql') as f:
+    insert_query = f.read()
 with cn.transaction():
-    # TODO: find a better way to iterate through rows
-    for row in new_hospitals_data:
+    for i in range(hp_to_insert.shape[0]):
+        row = hp_to_insert.iloc[i, :]
         try:
             with cn.transaction():
-                # placeholder query
-                cur.execute('SELECT * FROM hospitals;')
+                # TODO: fix NaN to be NULL in the database
+                cur.execute(
+                    insert_query,
+                    {
+                        'hospital_pk': row.hospital_pk,
+                        'hospital_name': row.hospital_name,
+                        'address': row.address,
+                        'city': row.city,
+                        'state': row.state,
+                        'zip': int(row.zip),
+                        'fips_code': row.fips_code,
+                        'lat': row.lat,
+                        'long': row.long
+                    }
+                )
         except Exception as e:
             print(e)
+            # TODO: make this better
+            # row.to_csv('insert_errors.csv', mode='a')
         else:
             rows_inserted += 1
 
 cn.commit()
+
+
+# TODO: update changed rows
