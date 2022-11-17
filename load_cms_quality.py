@@ -3,6 +3,7 @@
 import pandas as pd
 from misc_helpers import nan_to_null, get_insert_rows, get_update_rows
 
+
 def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
 
     cur = cn.cursor()
@@ -27,12 +28,11 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
         with open('update_hospital_quality.sql') as f:
             update_query = f.read()
         with cn.transaction():
-            #insert rows
+            # Insert rows
             for i in range(to_insert.shape[0]):
                 row = to_insert.iloc[i, :]
                 try:
                     with cn.transaction():
-                        # TODO: fix NaN to be NULL in the database
                         cur.execute(
                             insert_query,
                             {
@@ -46,8 +46,8 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                     insert_error_pks.append(row.hospital_pk)
                 else:
                     rows_inserted += 1
-        
-            #update rows
+
+            # Update rows
             for i in range(to_update.shape[0]):
                 row = to_update.iloc[i, :]
                 try:
@@ -66,14 +66,13 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                 else:
                     rows_updated += 1
 
-
     orig_to_load.merge(
         pd.DataFrame(
             {'hospital_pk': insert_error_pks}
         ),
         on='hospital_pk'
     ).to_csv(
-        'hhs_hospital_insert_errors.csv',
+        'cms_quality_insert_errors.csv',
         index=False
     )
 
@@ -83,14 +82,14 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
         ),
         on='hospital_pk'
     ).to_csv(
-        'hhs_hospital_update_errors.csv',
+        'cms_quality_update_errors.csv',
         index=False
     )
 
     cn.commit()
 
-    print(f'Inserted {rows_inserted} rows in the hospitals table.')
-    print(f'Updated {rows_updated} rows in the hospitals table.')
+    print(f'Inserted {rows_inserted} rows in the hospitals quality table.')
+    print(f'Updated {rows_updated} rows in the hospitals quality table.')
 
 
 # hospitals data = hd
@@ -98,21 +97,14 @@ def load_hhs_hospitals(cn, to_load):
 
     new_hd = to_load.filter(items=[
         'hospital_pk',
-        'state',
-        'hospital_name',
-        'address',
-        'city',
-        'zip',
-        'fips_code',
-        'geocoded_hospital_address'
+        'quality_rating'
     ])
 
     # preprocessing
-    geocode_to_lat_long(new_hd)
     new_hd = nan_to_null(new_hd)
 
     # divide into insert / update subsets
-    existing_hospitals = pd.read_sql_query('SELECT * FROM hospitals;', cn)
+    existing_hospitals = pd.read_sql_query('SELECT * FROM hospital_quality;', cn)
     join_keys = ['hospital_pk']
     to_insert = get_insert_rows(new_hd, existing_hospitals, join_keys)
     to_update = get_update_rows(new_hd, existing_hospitals, join_keys)
