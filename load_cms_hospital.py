@@ -98,19 +98,7 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
     print(f'Updated {rows_updated} rows in the hospitals table for CMS data.')
 
 def load_cms_hospitals(cn, to_load):
-    new_update_hospitals_data = to_load.rename({'Facility ID':'hospital_pk',
-                                                'Facility Name':'hospital_name',
-                                                'Address':'address',
-                                                'State':'state',
-                                                'County Name':'county',
-                                                'Hospital Ownership':'hospital_owner',
-                                                'Hospital Type':'hospital_type',
-                                                'Emergency Services':'ems_provided',
-                                                'Hospital overall rating':'quality_rating',
-                                                'ZIP Code':'zip',
-                                                'City':'city'}, axis='columns')
-
-    new_hd=new_update_hospitals_data[[
+    new_hd=to_load[[
             'hospital_pk',    
             'hospital_name',
             'address',
