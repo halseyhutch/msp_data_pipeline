@@ -1,8 +1,12 @@
 import psycopg as pc
 import pandas as pd
-from re import sub
+import sys
+from load_cms_hospital import load_hhs_hospitals
+from load_cms_quality import load_hhs_hospital_beds
 from credentials import DB_USER, DB_PW
 
+
+file_to_load = 'data/data/Hospital_General_Information-2021-07.csv' # sys.argv[2]
 
 cn = pc.connect(
     host="sculptor.stat.cmu.edu", dbname=DB_USER,
@@ -10,7 +14,7 @@ cn = pc.connect(
 )
 cur = cn.cursor()
 
-to_load = pd.read_csv("data/Hospital_General_Information-2021-07.csv",
+to_load = pd.read_csv("data/Hospital_General_Information-2021-07.csv", #file_to_load
         usecols=[
             'Facility ID',     
             'Facility Name',
@@ -37,155 +41,23 @@ to_load = pd.read_csv("data/Hospital_General_Information-2021-07.csv",
             'Hospital overall rating': 'float'},
         na_values=['Not Available'])
 
-new_update_hospitals_data=to_load.rename({'Facility ID':'hospital_pk',
-                                                        'Facility Name':'hospital_name',
-                                                        'Address':'address',
-                                                        'State':'state',
-                                                        'County Name':'county',
-                                                        'Hospital Ownership':'hospital_owner',
-                                                        'Hospital Type':'hospital_type',
-                                                        'Emergency Services':'ems_provided',
-                                                        'Hospital overall rating':'quality_rating',
-                                                        'ZIP Code':'zip',
-                                                        'City':'city',                                                        
+
+to_load_1 = to_load.rename({'Facility ID':'hospital_pk',
+                            'Facility Name':'hospital_name',
+                            'Address':'address',
+                            'State':'state',
+                            'Country Name':'county',
+                            'Hospital Ownership':'hospital_owner',
+                            'Hospital Type':'hospital_type',
+                            'Emergency Services':'ems_provided',
+                            'Hospital overall rating':'quality_rating',
+                            'ZIP Code':'zip',
+                            'City':'city'                              
                     },axis='columns')
 
-
-update_hospital_data = new_update_hospitals_data[[
-            'hospital_pk',    
-            'hospital_name',
-            'address',
-            'city',
-            'state',
-            'county',
-            'zip',
-            'hospital_owner',
-            'hospital_type',
-            'ems_provided'        
-]]
-
-update_hospital_data['ems_provided']=update_hospital_data['ems_provided'].map({'Yes': 1, 'No': 0})
-
-existing_data = pd.read_sql_query('SELECT * FROM hospitals;', cn)
-hp_to_insert =update_hospital_data.merge(
-    existing_data.hospital_pk,
-    how='outer',
-    on='hospital_pk',
-    indicator=True
-).query(
-    "_merge == 'left_only'"
-).drop(
-    '_merge', axis=1
-)
-    
-
-hp_to_update = update_hospital_data.merge(
-    existing_data.melt(
-        id_vars='hospital_pk',
-        value_name='old_val'
-    ).merge(
-        update_hospital_data.melt(
-            id_vars='hospital_pk',
-            value_name='new_val'
-        ),
-        on=['hospital_pk', 'variable']
-    ).query(
-        "old_val != new_val"
-    ).hospital_pk.drop_duplicates(),
-    on='hospital_pk'
-)
-
-rows_inserted = 0
-with open('insert_hospitals_hhs.sql') as f:
-    insert_query = f.read()
-with cn.transaction():
-    for i in range(hp_to_insert.shape[0]):
-        row = hp_to_insert.iloc[i, :]
-        try:
-            with cn.transaction():
-                # TODO: fix NaN to be NULL in the database
-                cur.execute(
-                    insert_query,
-                    {
-                        'hospital_pk': row.hospital_pk,
-                        'hospital_name': row.hospital_name,
-                        'address': row.address,
-                        'city': row.city,
-                        'state': row.state,
-                        'country':row.country,
-                        'zip': int(row.zip),
-                        'hospital_owner':row.hospital_owner,
-                        'hospital_type':row.hospital_type,
-                        'ems_provided':row.ems_provided
-                    }
-                )
-        except Exception as e:
-            print(e)
-            # TODO: make this better
-            # row.to_csv('insert_errors.csv', mode='a')
-        else:
-            rows_inserted += 1
-
-
-#update quality table
-existing_data = pd.read_sql_query('SELECT * FROM hospital_quality;', cn)
-hp_to_insert = update_quality_data.merge(
-    existing_data.hospital_pk,
-    how='outer',
-    on='hospital_pk',
-    indicator=True
-).query(
-    "_merge == 'left_only'"
-).drop(
-    '_merge', axis=1
-)
-
-
 record_date = '2021-07-01' #sys.argv[1]
-update_quality_data['record_date'] = [record_date for i in range(len(update_quality_data))]
-update_quality_data
+to_load_1['record_date'] = [record_date for i in range(len(to_load_1))]
+to_load_1
 
-# determine which hospitals need to be updated
-hp_to_update = update_quality_data.merge(
-    existing_data.melt(
-        id_vars='hospital_pk',
-        value_name='old_val'
-    ).merge(
-        update_quality_data.melt(
-            id_vars='hospital_pk',
-            value_name='new_val'
-        ),
-        on=['hospital_pk', 'variable']
-    ).query(
-        "old_val != new_val"
-    ).hospital_pk.drop_duplicates(),
-    on='hospital_pk'
-)
-
-# insert new rows
-rows_inserted = 0
-with open('insert_hospital_quality.sql') as f:
-    insert_query = f.read()
-with cn.transaction():
-    for i in range(hp_to_insert.shape[0]):
-        row = hp_to_insert.iloc[i, :]
-        try:
-            with cn.transaction():
-                # TODO: fix NaN to be NULL in the database
-                cur.execute(
-                    insert_query,
-                    {
-                        'hospital_pk': row.hospital_pk,
-                        'record_date': row.record_date,
-                        'quality_rating': row.quality_rating,
-                    }
-                )
-        except Exception as e:
-            print(e)
-            # TODO: make this better
-            # row.to_csv('insert_errors.csv', mode='a')
-        else:
-            rows_inserted += 1
-
-cn.commit()            
-            
+load_cms_hospitals(cn, to_load_1)
+load_cms_quality(cn, to_load_1)
