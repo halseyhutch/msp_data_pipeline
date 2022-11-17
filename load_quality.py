@@ -126,4 +126,66 @@ with cn.transaction():
         else:
             rows_inserted += 1
 
-cn.commit()
+
+#update quality table
+existing_data = pd.read_sql_query('SELECT * FROM hospital_quality;', cn)
+hp_to_insert = update_quality_data.merge(
+    existing_data.hospital_pk,
+    how='outer',
+    on='hospital_pk',
+    indicator=True
+).query(
+    "_merge == 'left_only'"
+).drop(
+    '_merge', axis=1
+)
+
+
+record_date = '2021-07-01' #sys.argv[1]
+update_quality_data['record_date'] = [record_date for i in range(len(update_quality_data))]
+update_quality_data
+
+# determine which hospitals need to be updated
+hp_to_update = update_quality_data.merge(
+    existing_data.melt(
+        id_vars='hospital_pk',
+        value_name='old_val'
+    ).merge(
+        update_quality_data.melt(
+            id_vars='hospital_pk',
+            value_name='new_val'
+        ),
+        on=['hospital_pk', 'variable']
+    ).query(
+        "old_val != new_val"
+    ).hospital_pk.drop_duplicates(),
+    on='hospital_pk'
+)
+
+# insert new rows
+rows_inserted = 0
+with open('insert_hospital_quality.sql') as f:
+    insert_query = f.read()
+with cn.transaction():
+    for i in range(hp_to_insert.shape[0]):
+        row = hp_to_insert.iloc[i, :]
+        try:
+            with cn.transaction():
+                # TODO: fix NaN to be NULL in the database
+                cur.execute(
+                    insert_query,
+                    {
+                        'hospital_pk': row.hospital_pk,
+                        'record_date': row.record_date,
+                        'quality_rating': row.quality_rating,
+                    }
+                )
+        except Exception as e:
+            print(e)
+            # TODO: make this better
+            # row.to_csv('insert_errors.csv', mode='a')
+        else:
+            rows_inserted += 1
+
+cn.commit()            
+            
