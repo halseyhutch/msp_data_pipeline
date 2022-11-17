@@ -3,6 +3,7 @@
 import pandas as pd
 from misc_helpers import nan_to_null, get_insert_rows, get_update_rows
 
+
 def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
 
     cur = cn.cursor()
@@ -27,7 +28,7 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
         with open('update_hospital_quality.sql') as f:
             update_query = f.read()
         with cn.transaction():
-            #insert rows
+            # Insert rows
             for i in range(to_insert.shape[0]):
                 row = to_insert.iloc[i, :]
                 try:
@@ -45,8 +46,8 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                     insert_error_pks.append(row.hospital_pk)
                 else:
                     rows_inserted += 1
-        
-            #update rows
+                    
+            # Update rows
             for i in range(to_update.shape[0]):
                 row = to_update.iloc[i, :]
                 try:
@@ -64,7 +65,6 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                     update_error_pks.append(row.hospital_pk)
                 else:
                     rows_updated += 1
-
 
     orig_to_load.merge(
         pd.DataFrame(
