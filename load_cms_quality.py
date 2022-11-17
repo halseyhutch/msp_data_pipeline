@@ -1,7 +1,6 @@
 # load_cms_quality.py
 
 import pandas as pd
-from re import sub
 from misc_helpers import nan_to_null, get_insert_rows, get_update_rows
 
 def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
@@ -103,7 +102,6 @@ def load_hhs_hospitals(cn, to_load):
     ])
 
     # preprocessing
-    geocode_to_lat_long(new_hd)
     new_hd = nan_to_null(new_hd)
 
     # divide into insert / update subsets
