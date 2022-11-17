@@ -66,7 +66,6 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                     rows_updated += 1
 
 
-
     orig_to_load.merge(
         pd.DataFrame(
             {'hospital_pk': insert_error_pks}
