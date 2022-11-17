@@ -91,8 +91,8 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
 
     cn.commit()
 
-    print(f'Inserted {rows_inserted} rows in the hospitals table.')
-    print(f'Updated {rows_updated} rows in the hospitals table.')
+    print(f'Inserted {rows_inserted} rows in the hospitals quality table.')
+    print(f'Updated {rows_updated} rows in the hospitals quality table.')
 
 
 # hospitals data = hd
@@ -100,13 +100,7 @@ def load_hhs_hospitals(cn, to_load):
 
     new_hd = to_load.filter(items=[
         'hospital_pk',
-        'state',
-        'hospital_name',
-        'address',
-        'city',
-        'zip',
-        'fips_code',
-        'geocoded_hospital_address'
+        'quality_rating'
     ])
 
     # preprocessing
@@ -114,7 +108,7 @@ def load_hhs_hospitals(cn, to_load):
     new_hd = nan_to_null(new_hd)
 
     # divide into insert / update subsets
-    existing_hospitals = pd.read_sql_query('SELECT * FROM hospitals;', cn)
+    existing_hospitals = pd.read_sql_query('SELECT * FROM hospital_quality;', cn)
     join_keys = ['hospital_pk']
     to_insert = get_insert_rows(new_hd, existing_hospitals, join_keys)
     to_update = get_update_rows(new_hd, existing_hospitals, join_keys)
