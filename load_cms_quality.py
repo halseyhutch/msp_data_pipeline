@@ -46,7 +46,7 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                     insert_error_pks.append(row.hospital_pk)
                 else:
                     rows_inserted += 1
-                    
+
             # Update rows
             for i in range(to_update.shape[0]):
                 row = to_update.iloc[i, :]
@@ -70,7 +70,7 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
         pd.DataFrame(
             {'hospital_pk': insert_error_pks}
         ),
-        on = 'hospital_pk'
+        on='hospital_pk'
     ).to_csv(
         'cms_quality_insert_errors.csv',
         index=False
@@ -80,7 +80,7 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
         pd.DataFrame(
             {'hospital_pk': update_error_pks}
         ),
-        on = 'hospital_pk'
+        on='hospital_pk'
     ).to_csv(
         'cms_quality_update_errors.csv',
         index=False
