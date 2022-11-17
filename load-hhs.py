@@ -1,6 +1,7 @@
 import psycopg as pc
 import pandas as pd
-from re import sub
+from load_hhs_hospitals import load_hhs_hospitals
+from load_hhs_hospital_beds import load_hhs_hospital_beds
 from credentials import DB_USER, DB_PW
 
 
@@ -8,11 +9,10 @@ cn = pc.connect(
     host="sculptor.stat.cmu.edu", dbname=DB_USER,
     user=DB_USER, password=DB_PW
 )
-cur = cn.cursor()
 
 
 to_load = pd.read_csv(
-    'data/2022-09-23-hhs-data.csv',
+    'data/2022-09-30-hhs-data.csv',
     usecols=[
         'hospital_pk',
         'state',
@@ -55,86 +55,5 @@ to_load = pd.read_csv(
     na_values=['-999999']
 )
 
-new_hospitals_data = to_load.filter(items=[
-    'hospital_pk',
-    'state',
-    'hospital_name',
-    'address',
-    'city',
-    'zip',
-    'fips_code',
-    'geocoded_hospital_address'
-])
-
-# transform geocoded address into lat/long columns
-new_hospitals_data['long'] = [float(sub(r'POINT \((.*) .*', r'\g<1>', str(x)))
-    for x in new_hospitals_data['geocoded_hospital_address']]
-new_hospitals_data['lat'] = [float(sub(r'POINT \(.* (.*)\)', r'\g<1>', str(x))) 
-    for x in new_hospitals_data['geocoded_hospital_address']]
-new_hospitals_data.drop('geocoded_hospital_address', axis=1, inplace=True)
-
-# determine which hospitals need to be inserted
-existing_data = pd.read_sql_query('SELECT * FROM hospitals;', cn)
-hp_to_insert = new_hospitals_data.merge(
-    existing_data.hospital_pk,
-    how='outer',
-    on='hospital_pk',
-    indicator=True
-).query(
-    "_merge == 'left_only'"
-).drop(
-    '_merge', axis=1
-)
-
-# determine which hospitals need to be updated
-hp_to_update = new_hospitals_data.merge(
-    existing_data.melt(
-        id_vars='hospital_pk',
-        value_name='old_val'
-    ).merge(
-        new_hospitals_data.melt(
-            id_vars='hospital_pk',
-            value_name='new_val'
-        ),
-        on=['hospital_pk', 'variable']
-    ).query(
-        "old_val != new_val"
-    ).hospital_pk.drop_duplicates(),
-    on='hospital_pk'
-)
-
-# insert new rows
-rows_inserted = 0
-with open('insert_hospitals_hhs.sql') as f:
-    insert_query = f.read()
-with cn.transaction():
-    for i in range(hp_to_insert.shape[0]):
-        row = hp_to_insert.iloc[i, :]
-        try:
-            with cn.transaction():
-                # TODO: fix NaN to be NULL in the database
-                cur.execute(
-                    insert_query,
-                    {
-                        'hospital_pk': row.hospital_pk,
-                        'hospital_name': row.hospital_name,
-                        'address': row.address,
-                        'city': row.city,
-                        'state': row.state,
-                        'zip': int(row.zip),
-                        'fips_code': row.fips_code,
-                        'lat': row.lat,
-                        'long': row.long
-                    }
-                )
-        except Exception as e:
-            print(e)
-            # TODO: make this better
-            # row.to_csv('insert_errors.csv', mode='a')
-        else:
-            rows_inserted += 1
-
-cn.commit()
-
-
-# TODO: update changed rows
+load_hhs_hospitals(cn, to_load)
+load_hhs_hospital_beds(cn, to_load)
