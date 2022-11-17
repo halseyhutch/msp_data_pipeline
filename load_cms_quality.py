@@ -44,8 +44,7 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                         )
                 except Exception as e:
                     print(e)
-                    # TODO: make this better
-                    # row.to_csv('insert_errors.csv', mode='a')
+                    insert_error_pks.append(row.hospital_pk)
                 else:
                     rows_inserted += 1
         
