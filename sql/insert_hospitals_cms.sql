@@ -1,2 +1,2 @@
-INSERT INTO hospitals (hospital_pk, hospital_name, address, city, state, zip, county, hospital_owner,hospital_type,ems_provided)
-VALUES (%(hospital_pk)s, %(hospital_name)s, %(address)s, %(city)s, %(state)s, %(zip)s, %(county)s, %(hospital_owner)s, %(hospital_type)s,%(hems_provided)s)
+INSERT INTO hospitals (hospital_pk, hospital_name, address, city, state, zip, county, hospital_owner, hospital_type, ems_provided)
+VALUES (%(hospital_pk)s, %(hospital_name)s, %(address)s, %(city)s, %(state)s, %(zip)s, %(county)s, %(hospital_owner)s, %(hospital_type)s, %(ems_provided)s);

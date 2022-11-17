@@ -1,4 +1,5 @@
 import pandas as pd
+import warnings
 from misc_helpers import nan_to_null, get_insert_rows, get_update_rows
 
 
@@ -53,6 +54,10 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
                 insert_error_pks.append(row.hospital_pk)
             else:
                 rows_inserted += 1
+            # progress bar
+            j = (i + 1)/to_insert.shape[0]
+            print("[%-20s] %d%%" % ('='*int(20*j), 100*j), end = '\r')
+
         # update rows
         for i in range(to_update.shape[0]):
             row = to_update.iloc[i, :]
@@ -86,6 +91,9 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
                 update_error_pks.append(row.hospital_pk)
             else:
                 rows_updated += 1
+            # progress bar
+            j = (i + 1)/to_update.shape[0]
+            print("[%-20s] %d%%" % ('='*int(20*j), 100*j), end = '\r')
 
     orig_to_load.merge(
         pd.DataFrame(
@@ -108,8 +116,8 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
     )
 
     cn.commit()
-    print(f'Inserted {rows_inserted} rows in hospital beds table.')
-    print(f'Updated {rows_updated} rows in hospital beds table.')
+    print(f'Inserted {rows_inserted} rows in the hospital beds table.')
+    print(f'Updated {rows_updated} rows in the hospital beds table.')
 
 
 # abbreviate hospital beds as hb
@@ -132,10 +140,16 @@ def load_hhs_hospital_beds(cn, to_load):
     new_hb = nan_to_null(new_hb)
 
     # divide into insert / update subsets
-    existing_hb = pd.read_sql_query('SELECT * FROM hospital_beds;', cn)
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        existing_hb = pd.read_sql_query(
+            'SELECT * FROM hospital_beds;',
+            cn,
+            parse_dates=['collection_week']
+        )
     join_keys = ['hospital_pk', 'collection_week']
-    to_insert = get_insert_rows(new_hb, existing_hb, join_keys)
-    to_update = get_update_rows(new_hb, existing_hb, join_keys)
+    to_insert = get_insert_rows(new_hb, nan_to_null(existing_hb), join_keys)
+    to_update = get_update_rows(new_hb, nan_to_null(existing_hb), join_keys)
 
     # push the data to sql
     hospital_beds_to_sql(cn, to_insert, to_update, to_load)

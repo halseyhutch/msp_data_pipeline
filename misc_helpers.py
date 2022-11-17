@@ -31,9 +31,8 @@ def get_update_rows(new, existing, join_keys):
             ),
             on=join_keys.copy().append(['variable'])
         ).query(
-            "old_val != new_val"
+            "old_val != new_val and not (old_val.isnull() and new_val.isnull())"
         )[join_keys].drop_duplicates(),
         on=join_keys
     )
     return to_update
-    
