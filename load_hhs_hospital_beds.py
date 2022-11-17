@@ -30,14 +30,22 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
                         {
                             'hospital_pk': row.hospital_pk,
                             'collection_week': row.collection_week,
-                            'all_adult_hospital_beds_7_day_avg': row.all_adult_hospital_beds_7_day_avg,
-                            'all_pediatric_inpatient_beds_7_day_avg': row.all_pediatric_inpatient_beds_7_day_avg,
-                            'all_adult_hospital_inpatient_bed_occupied_7_day_coverage': row.all_adult_hospital_inpatient_bed_occupied_7_day_coverage,
-                            'all_pediatric_inpatient_bed_occupied_7_day_avg': row.all_pediatric_inpatient_bed_occupied_7_day_avg,
-                            'total_icu_beds_7_day_avg': row.total_icu_beds_7_day_avg,
-                            'icu_beds_used_7_day_avg': row.icu_beds_used_7_day_avg,
-                            'inpatient_beds_used_covid_7_day_avg': row.inpatient_beds_used_covid_7_day_avg,
-                            'staffed_icu_adult_patients_confirmed_covid_7_day_avg': row.staffed_icu_adult_patients_confirmed_covid_7_day_avg
+                            'all_adult_hospital_beds_7_day_avg':
+                                row.all_adult_hospital_beds_7_day_avg,
+                            'all_pediatric_inpatient_beds_7_day_avg':
+                                row.all_pediatric_inpatient_beds_7_day_avg,
+                            'all_adult_hospital_inpatient_bed_occupied_7_day_coverage':
+                                row.all_adult_hospital_inpatient_bed_occupied_7_day_coverage,
+                            'all_pediatric_inpatient_bed_occupied_7_day_avg':
+                            row.all_pediatric_inpatient_bed_occupied_7_day_avg,
+                            'total_icu_beds_7_day_avg':
+                                row.total_icu_beds_7_day_avg,
+                            'icu_beds_used_7_day_avg':
+                                row.icu_beds_used_7_day_avg,
+                            'inpatient_beds_used_covid_7_day_avg':
+                                row.inpatient_beds_used_covid_7_day_avg,
+                            'staffed_icu_adult_patients_confirmed_covid_7_day_avg':
+                                row.staffed_icu_adult_patients_confirmed_covid_7_day_avg
                         }
                     )
             except Exception as e:
@@ -45,7 +53,6 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
                 insert_error_pks.append(row.hospital_pk)
             else:
                 rows_inserted += 1
-        
         # update rows
         for i in range(to_update.shape[0]):
             row = to_update.iloc[i, :]
@@ -56,14 +63,22 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
                         {
                             'hospital_pk': row.hospital_pk,
                             'collection_week': row.collection_week,
-                            'all_adult_hospital_beds_7_day_avg': row.all_adult_hospital_beds_7_day_avg,
-                            'all_pediatric_inpatient_beds_7_day_avg': row.all_pediatric_inpatient_beds_7_day_avg,
-                            'all_adult_hospital_inpatient_bed_occupied_7_day_coverage': row.all_adult_hospital_inpatient_bed_occupied_7_day_coverage,
-                            'all_pediatric_inpatient_bed_occupied_7_day_avg': row.all_pediatric_inpatient_bed_occupied_7_day_avg,
-                            'total_icu_beds_7_day_avg': row.total_icu_beds_7_day_avg,
-                            'icu_beds_used_7_day_avg': row.icu_beds_used_7_day_avg,
-                            'inpatient_beds_used_covid_7_day_avg': row.inpatient_beds_used_covid_7_day_avg,
-                            'staffed_icu_adult_patients_confirmed_covid_7_day_avg': row.staffed_icu_adult_patients_confirmed_covid_7_day_avg
+                            'all_adult_hospital_beds_7_day_avg':
+                                row.all_adult_hospital_beds_7_day_avg,
+                            'all_pediatric_inpatient_beds_7_day_avg':
+                                row.all_pediatric_inpatient_beds_7_day_avg,
+                            'all_adult_hospital_inpatient_bed_occupied_7_day_coverage':
+                                row.all_adult_hospital_inpatient_bed_occupied_7_day_coverage,
+                            'all_pediatric_inpatient_bed_occupied_7_day_avg':
+                                row.all_pediatric_inpatient_bed_occupied_7_day_avg,
+                            'total_icu_beds_7_day_avg':
+                                row.total_icu_beds_7_day_avg,
+                            'icu_beds_used_7_day_avg':
+                                row.icu_beds_used_7_day_avg,
+                            'inpatient_beds_used_covid_7_day_avg':
+                                row.inpatient_beds_used_covid_7_day_avg,
+                            'staffed_icu_adult_patients_confirmed_covid_7_day_avg':
+                                row.staffed_icu_adult_patients_confirmed_covid_7_day_avg
                         }
                     )
             except Exception as e:
@@ -72,12 +87,11 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
             else:
                 rows_updated += 1
 
-
     orig_to_load.merge(
         pd.DataFrame(
             {'hospital_pk': insert_error_pks}
         ),
-        on = 'hospital_pk'
+        on='hospital_pk'
     ).to_csv(
         'hospital_beds_insert_errors.csv',
         index=False
@@ -87,7 +101,7 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
         pd.DataFrame(
             {'hospital_pk': update_error_pks}
         ),
-        on = 'hospital_pk'
+        on='hospital_pk'
     ).to_csv(
         'hospital_beds_update_errors.csv',
         index=False
