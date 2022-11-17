@@ -55,9 +55,8 @@ to_load_1 = to_load.rename({'Facility ID': 'hospital_pk',
                             'ZIP Code': 'zip',
                             'City': 'city'}, axis='columns')
 
-record_date = '2021-07-01'  # sys.argv[1]
+record_date = str(sys.argv[1])
 to_load_1['record_date'] = [record_date for i in range(len(to_load_1))]
-to_load_1
 
 load_cms_hospitals(cn, to_load_1)
 load_cms_quality(cn, to_load_1)
