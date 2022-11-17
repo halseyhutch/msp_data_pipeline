@@ -36,3 +36,4 @@ def get_update_rows(new, existing, join_keys):
         on=join_keys
     )
     return to_update
+    

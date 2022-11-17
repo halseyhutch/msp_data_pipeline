@@ -5,9 +5,9 @@ from misc_helpers import nan_to_null, get_insert_rows, get_update_rows
 
 def geocode_to_lat_long(df):
     df['long'] = [float(sub(r'POINT \((.*) .*', r'\g<1>', str(x)))
-        for x in df['geocoded_hospital_address']]
-    df['lat'] = [float(sub(r'POINT \(.* (.*)\)', r'\g<1>', str(x))) 
-        for x in df['geocoded_hospital_address']]
+                  for x in df['geocoded_hospital_address']]
+    df['lat'] = [float(sub(r'POINT \(.* (.*)\)', r'\g<1>', str(x)))
+                 for x in df['geocoded_hospital_address']]
     df.drop('geocoded_hospital_address', axis=1, inplace=True)
 
 
@@ -16,6 +16,7 @@ def lat_long_to_geocode(df):
         df['long'].astype(str) + ' ' + df['lat'].astype(str) + ')'
     df.loc[df['long'].isnull(), 'geocoded_hospital_address'] = 'NA'
     df.drop(['lat', 'long'], axis=1, inplace=True)
+
 
 def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
 
@@ -58,7 +59,7 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                 insert_error_pks.append(row.hospital_pk)
             else:
                 rows_inserted += 1
-        
+
         # update rows
         for i in range(to_update.shape[0]):
             row = to_update.iloc[i, :]
@@ -84,12 +85,11 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
             else:
                 rows_updated += 1
 
-
     orig_to_load.merge(
         pd.DataFrame(
             {'hospital_pk': insert_error_pks}
         ),
-        on = 'hospital_pk'
+        on='hospital_pk'
     ).to_csv(
         'hhs_hospital_insert_errors.csv',
         index=False
@@ -99,7 +99,7 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
         pd.DataFrame(
             {'hospital_pk': update_error_pks}
         ),
-        on = 'hospital_pk'
+        on='hospital_pk'
     ).to_csv(
         'hhs_hospital_update_errors.csv',
         index=False

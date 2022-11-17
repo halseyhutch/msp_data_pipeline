@@ -1,7 +1,6 @@
 # load_cms_quality.py
 
 import pandas as pd
-from re import sub
 from misc_helpers import nan_to_null, get_insert_rows, get_update_rows
 
 def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):

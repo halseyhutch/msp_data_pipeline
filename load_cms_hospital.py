@@ -1,9 +1,8 @@
 import pandas as pd
-from re import sub
 from misc_helpers import nan_to_null, get_insert_rows, get_update_rows
 
-def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
 
+def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
     cur = cn.cursor()
 
     rows_inserted = 0
@@ -32,11 +31,11 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                             'address': row.address,
                             'city': row.city,
                             'state': row.state,
-                            'country':row.country,
+                            'country': row.country,
                             'zip': int(row.zip),
-                            'hospital_owner':row.hospital_owner,
-                            'hospital_type':row.hospital_type,
-                            'ems_provided':row.ems_provided
+                            'hospital_owner': row.hospital_owner,
+                            'hospital_type': row.hospital_type,
+                            'ems_provided': row.ems_provided
                         }
                     )
             except Exception as e:
@@ -44,7 +43,7 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                 insert_error_pks.append(row.hospital_pk)
             else:
                 rows_inserted += 1
-        
+
         # update rows
         for i in range(to_update.shape[0]):
             row = to_update.iloc[i, :]
@@ -58,11 +57,11 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                             'address': row.address,
                             'city': row.city,
                             'state': row.state,
-                            'country':row.country,
+                            'country': row.country,
                             'zip': int(row.zip),
-                            'hospital_owner':row.hospital_owner,
-                            'hospital_type':row.hospital_type,
-                            'ems_provided':row.ems_provided
+                            'hospital_owner': row.hospital_owner,
+                            'hospital_type': row.hospital_type,
+                            'ems_provided': row.ems_provided
                         }
                     )
             except Exception as e:
@@ -71,12 +70,11 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
             else:
                 rows_updated += 1
 
-
     orig_to_load.merge(
         pd.DataFrame(
             {'hospital_pk': insert_error_pks}
         ),
-        on = 'hospital_pk'
+        on='hospital_pk'
     ).to_csv(
         'cms_hospital_insert_errors.csv',
         index=False
@@ -86,7 +84,7 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
         pd.DataFrame(
             {'hospital_pk': update_error_pks}
         ),
-        on = 'hospital_pk'
+        on='hospital_pk'
     ).to_csv(
         'cms_hospital_update_errors.csv',
         index=False
@@ -94,12 +92,13 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
 
     cn.commit()
 
-    print(f'Inserted {rows_inserted} rows in the hospitals table for CMS data.')
+    print(f'Inserted {rows_inserted} rows in the hospital table for CMS data.')
     print(f'Updated {rows_updated} rows in the hospitals table for CMS data.')
 
+
 def load_cms_hospitals(cn, to_load):
-    new_hd=to_load[[
-            'hospital_pk',    
+    new_hd = to_load[[
+            'hospital_pk',
             'hospital_name',
             'address',
             'city',
@@ -108,8 +107,7 @@ def load_cms_hospitals(cn, to_load):
             'zip',
             'hospital_owner',
             'hospital_type',
-            'ems_provided'        
-]]
+            'ems_provided']]
     # preprocessing
     new_hd = nan_to_null(new_hd)
 

@@ -6,7 +6,7 @@ from load_hhs_hospital_beds import load_hhs_hospital_beds
 from credentials import DB_USER, DB_PW
 
 
-file_to_load = 'data/2022-09-30-hhs-data.csv' # sys.argv[1]
+file_to_load = sys.argv[1]
 cn = pc.connect(
     host="sculptor.stat.cmu.edu", dbname=DB_USER,
     user=DB_USER, password=DB_PW
@@ -34,7 +34,7 @@ to_load = pd.read_csv(
         'inpatient_beds_used_covid_7_day_avg',
         'staffed_icu_adult_patients_confirmed_covid_7_day_avg'
     ],
-    dtype = {
+    dtype={
         'hospital_pk': 'str',
         'state': 'str',
         'hospital_name': 'str',
