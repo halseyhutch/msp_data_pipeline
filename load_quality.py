@@ -41,15 +41,13 @@ new_update_hospitals_data=to_load.rename({'Facility ID':'hospital_pk',
                                                         'Facility Name':'hospital_name',
                                                         'Address':'address',
                                                         'State':'state',
-                                                        'Country Name':'country',
+                                                        'County Name':'county',
                                                         'Hospital Ownership':'hospital_owner',
                                                         'Hospital Type':'hospital_type',
                                                         'Emergency Services':'ems_provided',
                                                         'Hospital overall rating':'quality_rating',
-                                                        "ZIP Code":'zip',
-                                                        'City':'city',
-                                                        'County Name':'country'
-                                                        
+                                                        'ZIP Code':'zip',
+                                                        'City':'city',                                                        
                     },axis='columns')
 
 
@@ -59,7 +57,7 @@ update_hospital_data = new_update_hospitals_data[[
             'address',
             'city',
             'state',
-            'country',
+            'county',
             'zip',
             'hospital_owner',
             'hospital_type',
