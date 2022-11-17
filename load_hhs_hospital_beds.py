@@ -10,6 +10,7 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
     rows_inserted = 0
     rows_updated = 0
     # ASSUMPTION: each file has only one date.
+    # (this is an assert in the main script)
     insert_error_pks = []
     update_error_pks = []
 
