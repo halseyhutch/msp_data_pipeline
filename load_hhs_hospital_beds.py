@@ -1,5 +1,5 @@
 import pandas as pd
-from hhs_helpers import nan_to_null, get_insert_rows, get_update_rows
+from misc_helpers import nan_to_null, get_insert_rows, get_update_rows
 
 
 def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):

@@ -1,10 +1,12 @@
 import psycopg as pc
 import pandas as pd
+import sys
 from load_hhs_hospitals import load_hhs_hospitals
 from load_hhs_hospital_beds import load_hhs_hospital_beds
 from credentials import DB_USER, DB_PW
 
 
+file_to_load = 'data/2022-09-30-hhs-data.csv' # sys.argv[1]
 cn = pc.connect(
     host="sculptor.stat.cmu.edu", dbname=DB_USER,
     user=DB_USER, password=DB_PW
@@ -12,7 +14,7 @@ cn = pc.connect(
 
 
 to_load = pd.read_csv(
-    'data/2022-09-30-hhs-data.csv',
+    file_to_load,
     usecols=[
         'hospital_pk',
         'state',
