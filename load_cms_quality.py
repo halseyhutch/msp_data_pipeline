@@ -3,7 +3,6 @@
 import pandas as pd
 from misc_helpers import nan_to_null, get_insert_rows, get_update_rows
 
-
 def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
 
     cur = cn.cursor()
@@ -29,8 +28,8 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
             update_query = f.read()
         with cn.transaction():
             #insert rows
-            for i in range(hp_to_insert.shape[0]):
-                row = hp_to_insert.iloc[i, :]
+            for i in range(to_insert.shape[0]):
+                row = to_insert.iloc[i, :]
                 try:
                     with cn.transaction():
                         # TODO: fix NaN to be NULL in the database
@@ -49,31 +48,30 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                     rows_inserted += 1
         
             #update rows
-            try:
-                existing_data = pd.read_sql_query('SELECT * FROM hospital_quality;', cn)
-                hp_to_insert = update_quality_data.merge(
-                    existing_data.hospital_pk,
-                    how='outer',
-                    on='hospital_pk',
-                    indicator=True
-                        ).query(
-                    "_merge == 'left_only'"
-                ).drop(
-                    '_merge', axis=1
-                )
-            except Exception as e:
-                print(e)
-                update_error_pks.append(row.hospital_pk)
-            else:
-                rows_updated += 1
-
+            for i in range(to_update.shape[0]):
+                row = to_update.iloc[i, :]
+                try:
+                    with cn.transaction():
+                        cur.execute(
+                            update_query,
+                            {
+                                'hospital_pk': row.hospital_pk,
+                                'record_date': row.record_date,
+                                'quality_rating': row.quality_rating,
+                            }
+                        )
+                except Exception as e:
+                    print(e)
+                    update_error_pks.append(row.hospital_pk)
+                else:
+                    rows_updated += 1
 
 
     orig_to_load.merge(
         pd.DataFrame(
             {'hospital_pk': insert_error_pks}
         ),
-        on = 'hospital_pk'
+        on='hospital_pk'
     ).to_csv(
         'hhs_hospital_insert_errors.csv',
         index=False
@@ -83,7 +81,7 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
         pd.DataFrame(
             {'hospital_pk': update_error_pks}
         ),
-        on = 'hospital_pk'
+        on='hospital_pk'
     ).to_csv(
         'hhs_hospital_update_errors.csv',
         index=False
