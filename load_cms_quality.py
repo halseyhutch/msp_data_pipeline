@@ -1,5 +1,3 @@
-# load_cms_quality.py
-
 import warnings
 import pandas as pd
 from misc_helpers import nan_to_null, get_insert_rows, get_update_rows, \

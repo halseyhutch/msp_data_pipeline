@@ -1,7 +1,6 @@
 import psycopg as pc
 import pandas as pd
 import sys
-from datetime import datetime
 from load_cms_hospitals import load_cms_hospitals
 from load_cms_quality import load_cms_quality
 from credentials import DB_USER, DB_PW
