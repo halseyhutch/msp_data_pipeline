@@ -12,10 +12,12 @@ CREATE TABLE hospitals (
 	city text,
 	state text,
 	zip integer,
+	county text,
 	fips_code text,
 	lat numeric,
 	long numeric,
 	hospital_type text,
+	hospital_owner text,
 	ems_provided boolean
 );
 

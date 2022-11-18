@@ -7,5 +7,5 @@ zip = %(zip)s,
 county= %(county)s,
 hospital_owner=%(hospital_owner)s,
 hospital_type=%(hospital_type)s,
-ems_provided= %(ems_provided)s,
+ems_provided= %(ems_provided)s
 WHERE hospital_pk = %(hospital_pk)s;
