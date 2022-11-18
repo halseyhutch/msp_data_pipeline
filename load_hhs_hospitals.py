@@ -6,7 +6,7 @@ from misc_helpers import nan_to_null, get_insert_rows, get_update_rows, \
 
 
 def geocode_to_lat_long(df):
-    """helpful function that get geocode from lat and long variables."""
+    """Function that gets latitude and longitude from address geocode."""
     df['long'] = [float(sub(r'POINT \((.*) .*', r'\g<1>', str(x)))
                   for x in df['geocoded_hospital_address']]
     df['lat'] = [float(sub(r'POINT \(.* (.*)\)', r'\g<1>', str(x)))
@@ -15,7 +15,7 @@ def geocode_to_lat_long(df):
 
 
 def lat_long_to_geocode(df):
-    """helpful function that convert geocode to lat and long variables. """
+    """Function that converts address geocode to latitude and longitude."""
     df['geocoded_hospital_address'] = 'POINT (' + \
         df['long'].astype(str) + ' ' + df['lat'].astype(str) + ')'
     df.loc[df['long'].isnull(), 'geocoded_hospital_address'] = 'NA'
@@ -23,10 +23,10 @@ def lat_long_to_geocode(df):
 
 
 def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
-    """push data to sql table hospitals, as cn is connened to cursor,
-       to_insert: processes data needed insert,
-       to_update: processed data needed update,
-       orig_to_load: data original in hospitals."""
+    """Pushes data to sql table hospitals.
+       to_insert: processes data needed for insert,
+       to_update: processed data needed for update,
+       orig_to_load: original data from table hospitals."""
     cur = cn.cursor()
 
     rows_inserted = 0
@@ -42,7 +42,7 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
 
     with cn.transaction():
 
-        # insert rows
+        # Insert rows
         for i in range(to_insert.shape[0]):
             row = to_insert.iloc[i, :]
             try:
@@ -68,7 +68,7 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                 rows_inserted += 1
             progress_bar(i, to_insert.shape[0], 'Inserting HHS hospitals...')
 
-        # update rows
+        # Update rows
         for i in range(to_update.shape[0]):
             row = to_update.iloc[i, :]
             try:
@@ -120,7 +120,7 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
     print(f'Updated {rows_updated} rows in the hospitals table.'+' '*20)
 
 
-# hospitals data = hd
+# Hospitals data = hd
 def load_hhs_hospitals(cn, to_load):
     """main function to call helper functions to convert hhs data into
        table hospitals both insert and updated."""
@@ -135,11 +135,11 @@ def load_hhs_hospitals(cn, to_load):
         'geocoded_hospital_address'
     ])
 
-    # preprocessing
+    # Preprocessing
     geocode_to_lat_long(new_hd)
     new_hd = nan_to_null(new_hd)
 
-    # divide into insert / update subsets
+    # Divide into insert / update subsets
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         existing_hd = pd.read_sql_query('SELECT * FROM hospitals;', cn)
@@ -147,5 +147,5 @@ def load_hhs_hospitals(cn, to_load):
     to_insert = get_insert_rows(new_hd, nan_to_null(existing_hd), join_keys)
     to_update = get_update_rows(new_hd, nan_to_null(existing_hd), join_keys)
 
-    # push the data to sql
+    # Push the data to sql
     hospitals_to_sql(cn, to_insert, to_update, to_load)
