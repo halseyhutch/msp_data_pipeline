@@ -5,10 +5,10 @@ from misc_helpers import nan_to_null, get_insert_rows, get_update_rows, \
 
 
 def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
-    """push data to sql table hospitals, as cn is connened to cursor,
-       to_insert: processes data needed insert,
-       to_update: processed data needed update,
-       orig_to_load: data original in table hospitals."""
+    """Pushes data to SQL table hospitals.
+       to_insert: processes data needed for insert,
+       to_update: processed data needed for update,
+       orig_to_load: original data in table hospitals."""
     cur = cn.cursor()
 
     rows_inserted = 0
@@ -24,7 +24,7 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
 
     with cn.transaction():
 
-        # insert rows
+        # Insert rows
         for i in range(to_insert.shape[0]):
             row = to_insert.iloc[i, :]
             try:
@@ -51,7 +51,7 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                 rows_inserted += 1
             progress_bar(i, to_insert.shape[0], 'Inserting CMS hospitals...')
 
-        # update rows
+        # Update rows
         for i in range(to_update.shape[0]):
             row = to_update.iloc[i, :]
             try:
@@ -120,10 +120,10 @@ def load_cms_hospitals(cn, to_load):
         'ems_provided'
     ])
 
-    # preprocessing
+    # Preprocessing
     new_hd = nan_to_null(new_hd)
 
-    # divide into insert / update subsets
+    # Divide into insert / update subsets
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         existing_hospitals = pd.read_sql_query('SELECT * FROM hospitals;', cn)
@@ -136,5 +136,5 @@ def load_cms_hospitals(cn, to_load):
     to_insert = get_insert_rows(new_hd, existing_hospitals, join_keys)
     to_update = get_update_rows(new_hd, existing_hospitals, join_keys)
 
-    # push the data to sql
+    # Push the data to sql
     hospitals_to_sql(cn, to_insert, to_update, to_load)
