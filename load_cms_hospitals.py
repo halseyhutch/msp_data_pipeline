@@ -1,9 +1,11 @@
 import warnings
 import pandas as pd
-from misc_helpers import nan_to_null, get_insert_rows, get_update_rows
+from misc_helpers import nan_to_null, get_insert_rows, get_update_rows, \
+    progress_bar
 
 
 def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
+
     cur = cn.cursor()
 
     rows_inserted = 0
@@ -44,9 +46,8 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                 insert_error_pks.append(row.hospital_pk)
             else:
                 rows_inserted += 1
-            # progress bar
-            j = (i + 1)/to_insert.shape[0]
-            print("[%-20s] %d%%" % ('='*int(20*j), 100*j), end = '\r')
+            progress_bar(i, to_insert.shape[0], 'Inserting CMS hospitals...')
+
 
         # update rows
         for i in range(to_update.shape[0]):
@@ -73,9 +74,8 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                 update_error_pks.append(row.hospital_pk)
             else:
                 rows_updated += 1
-            # progress bar
-            j = (i + 1)/to_update.shape[0]
-            print("[%-20s] %d%%" % ('='*int(20*j), 100*j), end = '\r')
+            progress_bar(i, to_update.shape[0], 'Updating CMS hospitals...')
+
 
     orig_to_load.merge(
         pd.DataFrame(
@@ -99,22 +99,25 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
 
     cn.commit()
 
-    print(f'Inserted {rows_inserted} rows in the hospital table for CMS data.')
-    print(f'Updated {rows_updated} rows in the hospitals table for CMS data.')
+    print(f'Inserted {rows_inserted} rows in the hospitals table.'+' '*20)
+    print(f'Updated {rows_updated} rows in the hospitals table.'+' '*20)
 
 
 def load_cms_hospitals(cn, to_load):
-    new_hd = to_load[[
-            'hospital_pk',
-            'hospital_name',
-            'address',
-            'city',
-            'state',
-            'county',
-            'zip',
-            'hospital_owner',
-            'hospital_type',
-            'ems_provided']]
+
+    new_hd = to_load.filter(items=[
+        'hospital_pk',
+        'hospital_name',
+        'address',
+        'city',
+        'state',
+        'county',
+        'zip',
+        'hospital_owner',
+        'hospital_type',
+        'ems_provided'
+    ])
+
     # preprocessing
     new_hd = nan_to_null(new_hd)
 
@@ -122,7 +125,11 @@ def load_cms_hospitals(cn, to_load):
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         existing_hospitals = pd.read_sql_query('SELECT * FROM hospitals;', cn)
-    existing_hospitals['ems_provided'] = existing_hospitals.ems_provided.map({True: 'Yes', False: 'No'})
+
+    existing_hospitals['ems_provided'] = existing_hospitals.ems_provided.map(
+        {True: 'Yes', False: 'No'}
+    )
+
     join_keys = ['hospital_pk']
     to_insert = get_insert_rows(new_hd, existing_hospitals, join_keys)
     to_update = get_update_rows(new_hd, existing_hospitals, join_keys)

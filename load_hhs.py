@@ -6,7 +6,7 @@ from load_hhs_hospital_beds import load_hhs_hospital_beds
 from credentials import DB_USER, DB_PW
 
 
-file_to_load = 'data/2022-09-23-hhs-data.csv'  # sys.argv[1]
+file_to_load = sys.argv[1]
 cn = pc.connect(
     host="sculptor.stat.cmu.edu", dbname=DB_USER,
     user=DB_USER, password=DB_PW
@@ -61,3 +61,5 @@ assert len(to_load.collection_week.unique()) == 1, 'More than one date in file.'
 
 load_hhs_hospitals(cn, to_load)
 load_hhs_hospital_beds(cn, to_load)
+
+cn.close()

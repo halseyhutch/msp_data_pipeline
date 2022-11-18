@@ -5,6 +5,11 @@ def nan_to_null(df):
     return df.replace({np.nan: None})
 
 
+def progress_bar(i, n, label):
+    j = (i + 1)/n
+    print("%s  [%-20s] %d%%       " % (label, '='*int(20*j), 100*j), end = '\r')
+
+
 def get_insert_rows(new, existing, join_keys):
     to_insert = new.merge(
         existing[join_keys],
