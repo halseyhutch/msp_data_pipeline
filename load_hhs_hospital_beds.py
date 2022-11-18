@@ -5,10 +5,10 @@ from misc_helpers import nan_to_null, get_insert_rows, get_update_rows, \
 
 
 def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
-    """push data to sql table hospital_beds, as cn is connened to cursor,
-       to_insert: processes data needed insert,
-       to_update: processed data needed update,
-       orig_to_load: data original in table hospital_beds."""
+    """Pushes data to sql table hospital_beds.
+       to_insert: processes data needed for insert,
+       to_update: processes data needed for update,
+       orig_to_load: original data from table hospital_beds."""
     cur = cn.cursor()
 
     rows_inserted = 0
@@ -61,7 +61,7 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
                 rows_inserted += 1
             progress_bar(i, to_insert.shape[0], 'Inserting hospital_beds...')
 
-        # update rows
+        # Update rows
         for i in range(to_update.shape[0]):
             row = to_update.iloc[i, :]
             try:
@@ -121,7 +121,7 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
     print(f'Updated {rows_updated} rows in the hospital beds table.'+' '*20)
 
 
-# abbreviate hospital beds as hb
+# Abbreviate hospital beds as hb
 def load_hhs_hospital_beds(cn, to_load):
     """main function to call helper functions to convert hhs data into
        table hospital_beds both insert and updated."""
@@ -138,10 +138,10 @@ def load_hhs_hospital_beds(cn, to_load):
         'staffed_icu_adult_patients_confirmed_covid_7_day_avg'
     ])
 
-    # preprocessing
+    # Preprocessing
     new_hb = nan_to_null(new_hb)
 
-    # divide into insert / update subsets
+    # Divide into insert / update subsets
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         existing_hb = pd.read_sql_query(
@@ -153,5 +153,5 @@ def load_hhs_hospital_beds(cn, to_load):
     to_insert = get_insert_rows(new_hb, nan_to_null(existing_hb), join_keys)
     to_update = get_update_rows(new_hb, nan_to_null(existing_hb), join_keys)
 
-    # push the data to sql
+    # Push the data to sql
     hospital_beds_to_sql(cn, to_insert, to_update, to_load)
