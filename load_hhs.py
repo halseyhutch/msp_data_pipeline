@@ -1,5 +1,5 @@
-"""main file to read hhs data, get raw data from it, and call helper functions
-   to insert and update them into table hospitals and hospital_beds."""
+"""Main file to read and load HHS data, and call helper functions
+   to insert and update them into tables for hospitals and hospital_beds."""
 
 
 import psycopg as pc
