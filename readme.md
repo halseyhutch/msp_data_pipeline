@@ -1,20 +1,20 @@
 This project contains files that read, load, and update information for the HHS weekly data files and Hospital quality files. For the Hospital quality, the files can be ran with 'python load_quality.py date datafile.csv', and for the HHS weekly data files using 'python load-hhs.py datafile.csv'.
 
 
-Folder Sql: Store insert and update sql commands for all three tables (hospitals, hospital_beds, hospital_quality).
+Sql Folder: Contains commands for insert and update for all three tables (hospitals, hospital_beds, hospital_quality).
 
-Schema.sql: Store the tables structure: hospitals, hospital_beds, hospital_quality
+Schema.sql: Stores the structure for tables hospitals, hospital_beds, and hospital_quality.
 
-load-hhs.py: input with the name of the HHS weekly file as argument. Load the HHS weekly data, select and process columns, and call functions to insert and update hospitals table and hospital_beds table. 
+load-hhs.py: Main code to run HHS data with the name of the HHS weekly file as an argument. Loads the HHS weekly data, selects and processes columns, and calls functions to insert and update hospitals and hospital_beds tables. 
 
-load_quality.py: input with the 1st argument as the date of this quality data, and 2nd argument as the CMS quality file name. Load the quality data, select and process useful columns, and call functions to insert and update hospitals table and hospital_quality table.
+load_quality.py: Main code to run CMS quality data with the 1st argument as the date of this quality data and 2nd argument as the CMS quality file name. Loads the quality data, selects and processes columns, and calls functions to insert and update hospitals and hospital_quality tables.
 
-misc-helpers.py: store three functions: nan_to_null(), get_insert_rows(), get_update_rows() that we can call and help in other files. 
+misc-helpers.py: Store three helper functions nan_to_null(), get_insert_rows(), and get_update_rows() which are called in other files. 
 
-load_hhs_hospitals.py: with the data from HHS weekly file, insert and update it with the hospitals table. 
+load_hhs_hospitals.py: Uses the data from the HHS weekly file, and inserts and updates the hospitals table. 
 
-load_hhs_hospital_beds.py: with the data from HHS weekly file, insert and update it with the hospital_bed table. 
+load_hhs_hospital_beds.py: Uses the data from the HHS weekly file, and inserts and updates the hospital_bed table. 
 
-load_cms_hospital.py: with the data from CMS quality file, insert and update it with the hospitals table. 
+load_cms_hospital.py: Uses the data from the CMS quality file, and inserts and updates the hospitals table. 
 
-load_cms_quality.py: with the data from CMS quality file, insert and update it with the hospital_quality table. 
+load_cms_quality.py: Uses the data from the CMS quality file, and inserts and updates the hospital_quality table. 
