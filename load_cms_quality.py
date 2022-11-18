@@ -104,7 +104,8 @@ def load_hhs_hospitals(cn, to_load):
     new_hd = nan_to_null(new_hd)
 
     # divide into insert / update subsets
-    existing_hospitals = pd.read_sql_query('SELECT * FROM hospital_quality;', cn)
+    existing_hospitals = pd.read_sql_query(
+        'SELECT * FROM hospital_quality;', cn)
     join_keys = ['hospital_pk']
     to_insert = get_insert_rows(new_hd, existing_hospitals, join_keys)
     to_update = get_update_rows(new_hd, existing_hospitals, join_keys)
