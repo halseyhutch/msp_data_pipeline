@@ -1,5 +1,5 @@
-"""main file to read cms data, get raw data from it, and call helper functions
-   to insert and update them into table hospitals and hospital_quality."""
+"""Main file to read and load CMS Quality data, and call helper functions
+   to insert and update them into tables for hospitals and hospital_quality."""
 
 
 import psycopg as pc
