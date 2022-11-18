@@ -5,7 +5,10 @@ from misc_helpers import nan_to_null, get_insert_rows, get_update_rows, \
 
 
 def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
-
+    """push data to sql table hospital_beds, as cn is connened to cursor,
+       to_insert: processes data needed insert,
+       to_update: processed data needed update,
+       orig_to_load: data original in table hospital_beds."""
     cur = cn.cursor()
 
     rows_inserted = 0
@@ -93,7 +96,6 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
                 rows_updated += 1
             progress_bar(i, to_update.shape[0], 'Updating hospital_beds...')
 
-
     orig_to_load.merge(
         pd.DataFrame(
             {'hospital_pk': insert_error_pks}
@@ -121,7 +123,8 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
 
 # abbreviate hospital beds as hb
 def load_hhs_hospital_beds(cn, to_load):
-
+    """main function to call helper functions to convert hhs data into
+       table hospital_beds both insert and updated."""
     new_hb = to_load.filter(items=[
         'hospital_pk',
         'collection_week',

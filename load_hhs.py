@@ -1,3 +1,7 @@
+"""main file to read hhs data, get raw data from it, and call helper functions
+   to insert and update them into table hospitals and hospital_beds."""
+
+
 import psycopg as pc
 import pandas as pd
 import sys
@@ -57,7 +61,8 @@ to_load = pd.read_csv(
     na_values=['-999999']
 )
 
-assert len(to_load.collection_week.unique()) == 1, 'More than one date in file.'
+assert len(to_load.collection_week.unique()) == 1, \
+           'More than one date in file.'
 
 load_hhs_hospitals(cn, to_load)
 load_hhs_hospital_beds(cn, to_load)

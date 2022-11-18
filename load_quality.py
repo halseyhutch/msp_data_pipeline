@@ -1,3 +1,7 @@
+"""main file to read cms data, get raw data from it, and call helper functions
+   to insert and update them into table hospitals and hospital_quality."""
+
+
 import psycopg as pc
 import pandas as pd
 import sys

@@ -5,7 +5,10 @@ from misc_helpers import nan_to_null, get_insert_rows, get_update_rows, \
 
 
 def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
-
+    """push data to sql table hospitals, as cn is connened to cursor,
+       to_insert: processes data needed insert,
+       to_update: processed data needed update,
+       orig_to_load: data original in table hospitals."""
     cur = cn.cursor()
 
     rows_inserted = 0
@@ -48,7 +51,6 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                 rows_inserted += 1
             progress_bar(i, to_insert.shape[0], 'Inserting CMS hospitals...')
 
-
         # update rows
         for i in range(to_update.shape[0]):
             row = to_update.iloc[i, :]
@@ -75,7 +77,6 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
             else:
                 rows_updated += 1
             progress_bar(i, to_update.shape[0], 'Updating CMS hospitals...')
-
 
     orig_to_load.merge(
         pd.DataFrame(
@@ -104,7 +105,8 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
 
 
 def load_cms_hospitals(cn, to_load):
-
+    """main function to call helper functions to convert cms data into
+       table hospitals both insert and updated."""
     new_hd = to_load.filter(items=[
         'hospital_pk',
         'hospital_name',

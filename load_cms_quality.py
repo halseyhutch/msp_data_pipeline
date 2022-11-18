@@ -5,7 +5,10 @@ from misc_helpers import nan_to_null, get_insert_rows, get_update_rows, \
 
 
 def quality_to_sql(cn, to_insert, to_update, orig_to_load):
-
+    """push data to sql table hospital_quality, as cn is connened to cursor,
+       to_insert: processes data needed insert,
+       to_update: processed data needed update,
+       orig_to_load: data original in hospital_quality."""
     cur = cn.cursor()
 
     rows_inserted = 0
@@ -39,8 +42,8 @@ def quality_to_sql(cn, to_insert, to_update, orig_to_load):
                 insert_error_pks.append(row.hospital_pk)
             else:
                 rows_inserted += 1
-            progress_bar(i, to_insert.shape[0], 'Inserting hospital_quality...')
-
+            progress_bar(i, to_insert.shape[0],
+                         'Inserting hospital_quality...')
 
         # Update rows
         for i in range(to_update.shape[0]):
@@ -90,7 +93,8 @@ def quality_to_sql(cn, to_insert, to_update, orig_to_load):
 
 # quality data = hd
 def load_cms_quality(cn, to_load):
-
+    """main function to call helper functions to convert cms data into
+       table hospital_quality."""
     new_qd = to_load.filter(items=[
         'hospital_pk',
         'record_date',

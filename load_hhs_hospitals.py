@@ -6,6 +6,7 @@ from misc_helpers import nan_to_null, get_insert_rows, get_update_rows, \
 
 
 def geocode_to_lat_long(df):
+    """helpful function that get geocode from lat and long variables."""
     df['long'] = [float(sub(r'POINT \((.*) .*', r'\g<1>', str(x)))
                   for x in df['geocoded_hospital_address']]
     df['lat'] = [float(sub(r'POINT \(.* (.*)\)', r'\g<1>', str(x)))
@@ -14,6 +15,7 @@ def geocode_to_lat_long(df):
 
 
 def lat_long_to_geocode(df):
+    """helpful function that convert geocode to lat and long variables. """
     df['geocoded_hospital_address'] = 'POINT (' + \
         df['long'].astype(str) + ' ' + df['lat'].astype(str) + ')'
     df.loc[df['long'].isnull(), 'geocoded_hospital_address'] = 'NA'
@@ -21,7 +23,10 @@ def lat_long_to_geocode(df):
 
 
 def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
-
+    """push data to sql table hospitals, as cn is connened to cursor,
+       to_insert: processes data needed insert,
+       to_update: processed data needed update,
+       orig_to_load: data original in hospitals."""
     cur = cn.cursor()
 
     rows_inserted = 0
@@ -63,7 +68,6 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                 rows_inserted += 1
             progress_bar(i, to_insert.shape[0], 'Inserting HHS hospitals...')
 
-
         # update rows
         for i in range(to_update.shape[0]):
             row = to_update.iloc[i, :]
@@ -89,7 +93,6 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
             else:
                 rows_updated += 1
             progress_bar(i, to_update.shape[0], 'Updating HHS hospitals...')
-
 
     orig_to_load.merge(
         pd.DataFrame(
@@ -119,7 +122,8 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
 
 # hospitals data = hd
 def load_hhs_hospitals(cn, to_load):
-
+    """main function to call helper functions to convert hhs data into
+       table hospitals both insert and updated."""
     new_hd = to_load.filter(items=[
         'hospital_pk',
         'state',
