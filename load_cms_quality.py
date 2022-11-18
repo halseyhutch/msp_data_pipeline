@@ -5,10 +5,10 @@ from misc_helpers import nan_to_null, get_insert_rows, get_update_rows, \
 
 
 def quality_to_sql(cn, to_insert, to_update, orig_to_load):
-    """push data to sql table hospital_quality, as cn is connened to cursor,
-       to_insert: processes data needed insert,
-       to_update: processed data needed update,
-       orig_to_load: data original in hospital_quality."""
+    """Pushes data to SQL table hospital_quality.
+       to_insert: processes data needed for insert,
+       to_update: processed data needed for update,
+       orig_to_load: original data in table hospital_quality."""
     cur = cn.cursor()
 
     rows_inserted = 0
@@ -91,7 +91,7 @@ def quality_to_sql(cn, to_insert, to_update, orig_to_load):
     print(f'Updated {rows_updated} rows in the hospital_quality table.'+' '*20)
 
 
-# quality data = hd
+# Quality data = qd
 def load_cms_quality(cn, to_load):
     """main function to call helper functions to convert cms data into
        table hospital_quality."""
