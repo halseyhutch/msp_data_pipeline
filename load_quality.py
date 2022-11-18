@@ -7,14 +7,12 @@ from load_cms_quality import load_cms_quality
 from credentials import DB_USER, DB_PW
 
 
-file_to_load = 'data/Hospital_General_Information-2022-10.csv'
-record_date = '2022-10-01'
-
+file_to_load = sys.argv[2]
+record_date = sys.argv[1]
 cn = pc.connect(
     host="sculptor.stat.cmu.edu", dbname=DB_USER,
     user=DB_USER, password=DB_PW
 )
-cur = cn.cursor()
 
 to_load = pd.read_csv(
     file_to_load,
