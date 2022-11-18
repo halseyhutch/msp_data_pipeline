@@ -1,12 +1,14 @@
 import psycopg as pc
 import pandas as pd
 import sys
-from load_cms_hospital import load_cms_hospitals
+from datetime import datetime
+from load_cms_hospitals import load_cms_hospitals
 from load_cms_quality import load_cms_quality
 from credentials import DB_USER, DB_PW
 
 
-file_to_load = "data/Hospital_General_Information-2021-07.csv"
+file_to_load = 'data/Hospital_General_Information-2022-10.csv'
+record_date = '2022-10-01'
 
 cn = pc.connect(
     host="sculptor.stat.cmu.edu", dbname=DB_USER,
@@ -40,25 +42,27 @@ to_load = pd.read_csv(
         'Hospital Type': 'str',
         'Emergency Services': 'str',
         'Hospital overall rating': 'float'},
-    na_values=['Not Available'])
+    na_values=['Not Available']
+).rename(
+    {
+        'Facility ID': 'hospital_pk',
+        'Facility Name': 'hospital_name',
+        'Address': 'address',
+        'State': 'state',
+        'County Name': 'county',
+        'Hospital Ownership': 'hospital_owner',
+        'Hospital Type': 'hospital_type',
+        'Emergency Services': 'ems_provided',
+        'Hospital overall rating': 'quality_rating',
+        'ZIP Code': 'zip',
+        'City': 'city'
+    },
+    axis='columns'
+).assign(
+    record_date=record_date
+)
 
-
-to_load_1 = to_load.rename({'Facility ID': 'hospital_pk',
-                            'Facility Name': 'hospital_name',
-                            'Address': 'address',
-                            'State': 'state',
-                            'County Name': 'county',
-                            'Hospital Ownership': 'hospital_owner',
-                            'Hospital Type': 'hospital_type',
-                            'Emergency Services': 'ems_provided',
-                            'Hospital overall rating': 'quality_rating',
-                            'ZIP Code': 'zip',
-                            'City': 'city'}, axis='columns')
-
-record_date = '2021-07-01'
-to_load_1['record_date'] = [record_date for i in range(len(to_load_1))]
-
-load_cms_hospitals(cn, to_load_1)
-load_cms_quality(cn, to_load_1)
+load_cms_hospitals(cn, to_load)
+load_cms_quality(cn, to_load)
 
 cn.close()

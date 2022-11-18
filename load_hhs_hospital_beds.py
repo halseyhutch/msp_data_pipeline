@@ -1,6 +1,7 @@
 import pandas as pd
 import warnings
-from misc_helpers import nan_to_null, get_insert_rows, get_update_rows
+from misc_helpers import nan_to_null, get_insert_rows, get_update_rows, \
+    progress_bar
 
 
 def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
@@ -55,9 +56,7 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
                 insert_error_pks.append(row.hospital_pk)
             else:
                 rows_inserted += 1
-            # progress bar
-            j = (i + 1)/to_insert.shape[0]
-            print("[%-20s] %d%%" % ('='*int(20*j), 100*j), end = '\r')
+            progress_bar(i, to_insert.shape[0], 'Inserting hospital_beds...')
 
         # update rows
         for i in range(to_update.shape[0]):
@@ -92,9 +91,8 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
                 update_error_pks.append(row.hospital_pk)
             else:
                 rows_updated += 1
-            # progress bar
-            j = (i + 1)/to_update.shape[0]
-            print("[%-20s] %d%%" % ('='*int(20*j), 100*j), end = '\r')
+            progress_bar(i, to_update.shape[0], 'Updating hospital_beds...')
+
 
     orig_to_load.merge(
         pd.DataFrame(
@@ -117,8 +115,8 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
     )
 
     cn.commit()
-    print(f'Inserted {rows_inserted} rows in the hospital beds table.')
-    print(f'Updated {rows_updated} rows in the hospital beds table.')
+    print(f'Inserted {rows_inserted} rows in the hospital beds table.'+' '*20)
+    print(f'Updated {rows_updated} rows in the hospital beds table.'+' '*20)
 
 
 # abbreviate hospital beds as hb
