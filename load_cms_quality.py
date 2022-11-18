@@ -1,10 +1,11 @@
 # load_cms_quality.py
 
+import warnings
 import pandas as pd
 from misc_helpers import nan_to_null, get_insert_rows, get_update_rows
 
 
-def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
+def quality_to_sql(cn, to_insert, to_update, orig_to_load):
 
     cur = cn.cursor()
 
@@ -13,20 +14,17 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
     insert_error_pks = []
     update_error_pks = []
 
-    with open('sql/insert_cms_quality.sql') as f:
+    with open('sql/insert_quality_cms.sql') as f:
         insert_query = f.read()
 
-    with open('sql/update_cms_quality.sql') as f:
+    with open('sql/update_quality_cms.sql') as f:
         update_query = f.read()
 
     with cn.transaction():
 
         rows_inserted = 0
         rows_updated = 0
-        with open('insert_hospital_quality.sql') as f:
-            insert_query = f.read()
-        with open('update_hospital_quality.sql') as f:
-            update_query = f.read()
+
         with cn.transaction():
             # Insert rows
             for i in range(to_insert.shape[0]):
@@ -46,6 +44,9 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                     insert_error_pks.append(row.hospital_pk)
                 else:
                     rows_inserted += 1
+                # progress bar
+                j = (i + 1)/to_insert.shape[0]
+                print("[%-20s] %d%%" % ('='*int(20*j), 100*j), end = '\r')
 
             # Update rows
             for i in range(to_update.shape[0]):
@@ -65,6 +66,9 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
                     update_error_pks.append(row.hospital_pk)
                 else:
                     rows_updated += 1
+                # progress bar
+                j = (i + 1)/to_update.shape[0]
+                print("[%-20s] %d%%" % ('='*int(20*j), 100*j), end = '\r')
 
     orig_to_load.merge(
         pd.DataFrame(
@@ -92,23 +96,23 @@ def hospitals_to_sql(cn, to_insert, to_update, orig_to_load):
     print(f'Updated {rows_updated} rows in the hospitals quality table.')
 
 
-# hospitals data = hd
-def load_hhs_hospitals(cn, to_load):
+# quality data = hd
+def load_cms_quality(cn, to_load):
 
-    new_hd = to_load.filter(items=[
+    new_qd = to_load.filter(items=[
         'hospital_pk',
-        'quality_rating'
+        'quality_rating',
+        'record_date'
     ])
 
-    # preprocessing
-    new_hd = nan_to_null(new_hd)
+    # Preprocessing
+    new_qd = nan_to_null(new_qd)
 
     # divide into insert / update subsets
-    existing_hospitals = pd.read_sql_query(
-        'SELECT * FROM hospital_quality;', cn)
+    existing_hospitals = pd.read_sql_query('SELECT * FROM hospital_quality;', cn)
     join_keys = ['hospital_pk']
     to_insert = get_insert_rows(new_hd, existing_hospitals, join_keys)
     to_update = get_update_rows(new_hd, existing_hospitals, join_keys)
 
-    # push the data to sql
-    hospitals_to_sql(cn, to_insert, to_update, to_load)
+    # Push the data to sql
+    quality_to_sql(cn, to_insert, to_update, to_load)
