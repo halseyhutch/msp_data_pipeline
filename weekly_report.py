@@ -34,6 +34,7 @@ with warnings.catch_warnings():
 
     warnings.simplefilter('ignore')
 
+    # QUERY
     # A summary of how many hospital records were loaded
     # in the most recent week, and how that compares to previous weeks.
     record_counts = pd.read_sql_query(
@@ -46,6 +47,7 @@ with warnings.catch_warnings():
         params={'as_of_date': as_of_date}
     )
 
+    # QUERY
     # A table summarizing the number of adult and pediatric beds available
     # this week, the number used, and the number used by patients with COVID,
     # compared to the 4 most recent weeks.
@@ -73,6 +75,7 @@ with warnings.catch_warnings():
         }
     )
 
+    # QUERY
     # A graph or table summarizing the fraction of beds in use by hospital
     # quality rating, so we can compare high-quality and low-quality hospitals.
     beds_by_quality = pd.read_sql_query(
@@ -97,6 +100,7 @@ with warnings.catch_warnings():
         params={'as_of_date': as_of_date}
     )
 
+    # QUERY
     # A plot of the total number of hospital beds used per week, over all time,
     # split into all cases and COVID cases.
     beds_used_plot = pd.read_sql_query(
@@ -111,7 +115,8 @@ with warnings.catch_warnings():
         cn
     )
 
-    # Heatmap of COVID cases as of current date
+    # QUERY
+    # Heatmap of COVID cases as of current date.
     covid_heatmap_data = pd.read_sql_query(
         """
         SELECT AVG(lat) AS lat,
@@ -128,6 +133,7 @@ with warnings.catch_warnings():
         params={'as_of_date': as_of_date}
     )
 
+    # QUERY
     # A table of hospitals that did not report any data in the past week, their 
     # names, and the date they most recently reported data.
     nonreporting_hospitals = pd.read_sql_query(
@@ -150,6 +156,7 @@ with warnings.catch_warnings():
         index_col='Hospital Name'
     )
 
+    # QUERY
     # Graphs of hospital utilization (the percent of available beds being used) 
     # by state, over time.
     hosp_util_plot = pd.read_sql_query(
@@ -165,7 +172,9 @@ with warnings.catch_warnings():
     )
 
 
-
+# PLOT
+# A summary of how many hospital records were loaded
+# in the most recent week, and how that compares to previous weeks.
 st.header('Records Loaded By Date')
 st.plotly_chart(
     pe.line(
@@ -177,11 +186,18 @@ st.plotly_chart(
     use_container_width=True
 )
 
-# more beds in use than available?
+
+# TABLE
+# A table summarizing the number of adult and pediatric beds available
+# this week, the number used, and the number used by patients with COVID,
+# compared to the 4 most recent weeks.
 st.header('Hospital Beds Available')
 st.dataframe(bed_counts, use_container_width=True)
 
-# why so many values > 1?
+
+# PLOT
+# A graph or table summarizing the fraction of beds in use by hospital
+# quality rating, so we can compare high-quality and low-quality hospitals.
 st.header('Beds In Use By Hospital Quality')
 st.plotly_chart(
     pe.box(
@@ -194,6 +210,9 @@ st.plotly_chart(
 )
 
 
+# PLOT
+# A plot of the total number of hospital beds used per week, over all time,
+# split into all cases and COVID cases.
 beds_used_fig = make_subplots(specs=[[{"secondary_y": True}]])
 
 beds_used_fig.add_trace(
@@ -221,6 +240,8 @@ st.header('Beds Used Over Time')
 st.plotly_chart(beds_used_fig, use_container_width=True)
 
 
+# PLOT
+# Heatmap of COVID cases as of current date.
 covid_heatmap_data['label'] = covid_heatmap_data['city'] + ', ' + \
     covid_heatmap_data['state'] + '<br>' + 'COVID Cases: ' + \
     covid_heatmap_data['COVID Cases'].astype(str) 
@@ -230,8 +251,10 @@ heatmap=go.Figure(
         lon=covid_heatmap_data['long'],
         lat=covid_heatmap_data['lat'],
         text=covid_heatmap_data['label'],
+        # <extra></extra> removes the trace label.
         hovertemplate='%{text}<extra></extra>',
         marker = dict(
+            # scaling the sizes to be more reasonable.
             size = np.sqrt(covid_heatmap_data['COVID Cases'])*1.5,
             color = covid_heatmap_data['COVID Cases'], 
             colorscale = [[0, 'rgb(255,255,0)'], [1, 'rgb(255,0,0)']],
@@ -249,10 +272,16 @@ st.header('COVID Cases by City')
 st.plotly_chart(heatmap, use_container_width=True)
 
 
+# TABLE
+# A table of hospitals that did not report any data in the past week, their 
+# names, and the date they most recently reported data.
 st.header('No Data Reported This Week')
 st.dataframe(nonreporting_hospitals,  use_container_width=True)
 
 
+# PLOT
+# Graphs of hospital utilization (the percent of available beds being used) 
+# by state, over time.
 hosp_util_plot['addr'] = hosp_util_plot['city'] + ', ' + \
     hosp_util_plot['state']
 # scaling the size a bit so we aren't overwhelmed with points.
