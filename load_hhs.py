@@ -10,7 +10,7 @@ from load_hhs_hospital_beds import load_hhs_hospital_beds
 from credentials import DB_USER, DB_PW
 
 
-file_to_load = sys.argv[1]
+file_to_load = sys.argv[1]  # 'data/2022-10-21-hhs-data.csv'
 cn = pc.connect(
     host="sculptor.stat.cmu.edu", dbname=DB_USER,
     user=DB_USER, password=DB_PW
@@ -31,7 +31,7 @@ to_load = pd.read_csv(
         'collection_week',
         'all_adult_hospital_beds_7_day_avg',
         'all_pediatric_inpatient_beds_7_day_avg',
-        'all_adult_hospital_inpatient_bed_occupied_7_day_coverage',
+        'all_adult_hospital_inpatient_bed_occupied_7_day_avg',
         'all_pediatric_inpatient_bed_occupied_7_day_avg',
         'total_icu_beds_7_day_avg',
         'icu_beds_used_7_day_avg',
@@ -50,7 +50,7 @@ to_load = pd.read_csv(
         'collection_week': 'str',
         'all_adult_hospital_beds_7_day_avg': 'float',
         'all_pediatric_inpatient_beds_7_day_avg': 'float',
-        'all_adult_hospital_inpatient_bed_occupied_7_day_coverage': 'float',
+        'all_adult_hospital_inpatient_bed_occupied_7_day_avg': 'float',
         'all_pediatric_inpatient_bed_occupied_7_day_avg': 'float',
         'total_icu_beds_7_day_avg': 'float',
         'icu_beds_used_7_day_avg': 'float',

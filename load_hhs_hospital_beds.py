@@ -40,8 +40,8 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
                                 row.all_adult_hospital_beds_7_day_avg,
                             'all_pediatric_inpatient_beds_7_day_avg':
                                 row.all_pediatric_inpatient_beds_7_day_avg,
-                            'all_adult_hospital_inpatient_bed_occupied_7_day_coverage':
-                                row.all_adult_hospital_inpatient_bed_occupied_7_day_coverage,
+                            'all_adult_hospital_inpatient_bed_occupied_7_day_avg':
+                                row.all_adult_hospital_inpatient_bed_occupied_7_day_avg,
                             'all_pediatric_inpatient_bed_occupied_7_day_avg':
                             row.all_pediatric_inpatient_bed_occupied_7_day_avg,
                             'total_icu_beds_7_day_avg':
@@ -75,8 +75,8 @@ def hospital_beds_to_sql(cn, to_insert, to_update, orig_to_load):
                                 row.all_adult_hospital_beds_7_day_avg,
                             'all_pediatric_inpatient_beds_7_day_avg':
                                 row.all_pediatric_inpatient_beds_7_day_avg,
-                            'all_adult_hospital_inpatient_bed_occupied_7_day_coverage':
-                                row.all_adult_hospital_inpatient_bed_occupied_7_day_coverage,
+                            'all_adult_hospital_inpatient_bed_occupied_7_day_avg':
+                                row.all_adult_hospital_inpatient_bed_occupied_7_day_avg,
                             'all_pediatric_inpatient_bed_occupied_7_day_avg':
                                 row.all_pediatric_inpatient_bed_occupied_7_day_avg,
                             'total_icu_beds_7_day_avg':
@@ -130,7 +130,7 @@ def load_hhs_hospital_beds(cn, to_load):
         'collection_week',
         'all_adult_hospital_beds_7_day_avg',
         'all_pediatric_inpatient_beds_7_day_avg',
-        'all_adult_hospital_inpatient_bed_occupied_7_day_coverage',
+        'all_adult_hospital_inpatient_bed_occupied_7_day_avg',
         'all_pediatric_inpatient_bed_occupied_7_day_avg',
         'total_icu_beds_7_day_avg',
         'icu_beds_used_7_day_avg',

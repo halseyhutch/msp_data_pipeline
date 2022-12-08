@@ -29,7 +29,7 @@ CREATE TABLE hospital_beds (
 	collection_week date CHECK (collection_week <= CURRENT_DATE),
 	all_adult_hospital_beds_7_day_avg numeric CHECK (all_adult_hospital_beds_7_day_avg >= 0),
 	all_pediatric_inpatient_beds_7_day_avg numeric CHECK (all_pediatric_inpatient_beds_7_day_avg >= 0),
-	all_adult_hospital_inpatient_bed_occupied_7_day_coverage numeric CHECK (all_adult_hospital_inpatient_bed_occupied_7_day_coverage >= 0),
+	all_adult_hospital_inpatient_bed_occupied_7_day_avg numeric CHECK (all_adult_hospital_inpatient_bed_occupied_7_day_avg >= 0),
 	all_pediatric_inpatient_bed_occupied_7_day_avg numeric CHECK (all_pediatric_inpatient_bed_occupied_7_day_avg >= 0),
 	total_icu_beds_7_day_avg numeric CHECK (total_icu_beds_7_day_avg >= 0),
 	icu_beds_used_7_day_avg numeric CHECK (icu_beds_used_7_day_avg >= 0),

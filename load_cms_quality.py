@@ -110,7 +110,10 @@ def load_cms_quality(cn, to_load):
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         existing_qd = pd.read_sql_query(
-            'SELECT * FROM hospital_quality;', cn)
+            'SELECT * FROM hospital_quality;',
+            cn,
+            dtype={'record_date': 'str'}
+        )
     join_keys = ['hospital_pk', 'record_date']
     to_insert = get_insert_rows(new_qd, existing_qd, join_keys)
     to_update = get_update_rows(new_qd, existing_qd, join_keys)
