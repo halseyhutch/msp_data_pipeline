@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as pe
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import psycopg as pc
 import warnings
 from credentials import DB_USER, DB_PW
@@ -155,21 +156,52 @@ st.plotly_chart(
 )
 
 # why is this line so flat?
-st.plotly_chart(
-    pe.line(
-        beds_used_plot,
-        x='collection_week',
-        y=['Beds Used', 'COVID Beds Used'],
-        title='Beds Used Over Time',
-        labels={
-            'collection_week': 'Date',
-            'value': 'Value',
-            'variable': ''
-        },
-        log_y=True
-    ),
-    use_container_width=True
+# st.plotly_chart(
+#     pe.line(
+#         beds_used_plot,
+#         x='collection_week',
+#         y='Beds Used',
+#         title='Beds Used Over Time',
+#         labels={
+#             'collection_week': 'Date'
+#         }
+#     ),
+#     use_container_width=True
+# )
+
+# st.plotly_chart(
+#     pe.line(
+#         beds_used_plot,
+#         x='collection_week',
+#         y='COVID Beds Used',
+#         color_discrete_sequence=['red'],
+#         labels={
+#             'collection_week': 'Date'
+#         }
+#     ),
+#     use_container_width=True
+# )
+
+beds_used_fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+beds_used_fig.add_trace(
+    go.Scatter(x=beds_used_plot['collection_week'], y=beds_used_plot['Beds Used'], name='Beds Used'),
+    secondary_y=False,
 )
+beds_used_fig.add_trace(
+    go.Scatter(x=beds_used_plot['collection_week'], y=beds_used_plot['COVID Beds Used'], name='COVID Beds Used'),
+    secondary_y=True,
+)
+
+beds_used_fig.update_layout(
+    title_text="Beds Used Over Time",
+    showlegend=False
+)
+beds_used_fig.update_xaxes(title_text="Date")
+beds_used_fig.update_yaxes(title_text="Beds Used", secondary_y=False)
+beds_used_fig.update_yaxes(title_text="COVID Beds Used", secondary_y=True)
+
+st.plotly_chart(beds_used_fig, use_container_width=True)
 
 ## HEATMAP
 
