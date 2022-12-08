@@ -85,7 +85,7 @@ with warnings.catch_warnings():
             WHERE record_date <= %(as_of_date)s 
             ORDER BY hospital_pk, record_date DESC
         )
-        SELECT (all_adult_hospital_inpatient_bed_occupied_7_day_avg)/(all_adult_hospital_beds_7_day_avg) AS "Beds In Use",
+        SELECT (all_adult_hospital_inpatient_bed_occupied_7_day_avg + all_pediatric_inpatient_bed_occupied_7_day_avg) / (all_adult_hospital_inpatient_bed_occupied_7_day_avg + all_pediatric_inpatient_bed_occupied_7_day_avg + all_adult_hospital_beds_7_day_avg + all_pediatric_inpatient_beds_7_day_avg) AS "Beds In Use",
         mrr.quality_rating AS "Quality Rating",
         h.hospital_pk
         FROM hospitals h
@@ -188,51 +188,31 @@ st.plotly_chart(
         beds_by_quality,
         x='Quality Rating',
         y='Beds In Use',
-        labels={'hospital_pk': 'PK'},
-        log_y=True
+        labels={'hospital_pk': 'PK', 'Beds In Use': '% Beds In Use'}
     ),
     use_container_width=True
 )
 
-# why is this line so flat?
-# st.plotly_chart(
-#     pe.line(
-#         beds_used_plot,
-#         x='collection_week',
-#         y='Beds Used',
-#         title='Beds Used Over Time',
-#         labels={
-#             'collection_week': 'Date'
-#         }
-#     ),
-#     use_container_width=True
-# )
-
-# st.plotly_chart(
-#     pe.line(
-#         beds_used_plot,
-#         x='collection_week',
-#         y='COVID Beds Used',
-#         color_discrete_sequence=['red'],
-#         labels={
-#             'collection_week': 'Date'
-#         }
-#     ),
-#     use_container_width=True
-# )
 
 beds_used_fig = make_subplots(specs=[[{"secondary_y": True}]])
 
 beds_used_fig.add_trace(
-    go.Scatter(x=beds_used_plot['collection_week'], y=beds_used_plot['Beds Used'], name='Beds Used'),
+    go.Scatter(
+        x=beds_used_plot['collection_week'],
+        y=beds_used_plot['Beds Used'],
+        name='Beds Used'
+    ),
     secondary_y=False,
 )
 beds_used_fig.add_trace(
-    go.Scatter(x=beds_used_plot['collection_week'], y=beds_used_plot['COVID Beds Used'], name='COVID Beds Used'),
+    go.Scatter(
+        x=beds_used_plot['collection_week'],
+        y=beds_used_plot['COVID Beds Used'],
+        name='COVID Beds Used'
+    ),
     secondary_y=True,
 )
 
-beds_used_fig.update_layout(showlegend=False)
 beds_used_fig.update_xaxes(title_text="Date")
 beds_used_fig.update_yaxes(title_text="Beds Used", secondary_y=False)
 beds_used_fig.update_yaxes(title_text="COVID Beds Used", secondary_y=True)

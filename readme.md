@@ -18,3 +18,8 @@ load_hhs_hospital_beds.py: Uses the data from the HHS weekly file, and inserts a
 load_cms_hospital.py: Uses the data from the CMS quality file, and inserts and updates the hospitals table. 
 
 load_cms_quality.py: Uses the data from the CMS quality file, and inserts and updates the hospital_quality table. 
+
+
+We created a streamlit dashboard on top of the data stored in SQL. This can be run by installing streamlit and running the following in the main folder:
+
+`streamlit run weekly_report.py`
