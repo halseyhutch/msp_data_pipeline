@@ -19,7 +19,8 @@ st.set_page_config(layout="wide")
 with warnings.catch_warnings():
     warnings.simplefilter('ignore')
     dates_to_select = pd.read_sql_query(
-        "SELECT DISTINCT collection_week FROM hospital_beds ORDER BY collection_week DESC;",
+        """SELECT DISTINCT collection_week FROM hospital_beds
+        ORDER BY collection_week DESC;""",
         cn
     )
 
@@ -127,29 +128,67 @@ with warnings.catch_warnings():
         params={'as_of_date': as_of_date}
     )
 
+    # A table of hospitals that did not report any data in the past week, their 
+    # names, and the date they most recently reported data.
+    nonreporting_hospitals = pd.read_sql_query(
+        """
+        WITH _recently_reported AS (
+            SELECT DISTINCT hospital_pk, 1 AS dummy
+            FROM hospital_beds hb
+            WHERE collection_week = %(as_of_date)s
+        )
+        SELECT MAX(h.hospital_name) AS "Hospital Name", MAX(hb.collection_week) AS "Last Reported"
+        FROM hospitals h
+        FULL JOIN _recently_reported rr ON rr.hospital_pk = h.hospital_pk
+        JOIN hospital_beds hb ON hb.hospital_pk = h.hospital_pk
+        WHERE rr.dummy IS NULL
+        GROUP BY h.hospital_pk
+        ORDER BY "Last Reported" DESC, "Hospital Name";
+        """,
+        cn,
+        params={'as_of_date': as_of_date},
+        index_col='Hospital Name'
+    )
 
+    # Graphs of hospital utilization (the percent of available beds being used) 
+    # by state, over time.
+    hosp_util_plot = pd.read_sql_query(
+        """
+        SELECT collection_week AS "Date", state, city, AVG(lat) AS lat, AVG(long) AS long,
+        ( SUM(all_adult_hospital_inpatient_bed_occupied_7_day_avg) + SUM(all_pediatric_inpatient_bed_occupied_7_day_avg)) / (SUM(all_adult_hospital_inpatient_bed_occupied_7_day_avg) + SUM(all_pediatric_inpatient_bed_occupied_7_day_avg) + SUM(all_adult_hospital_beds_7_day_avg) + SUM(all_pediatric_inpatient_beds_7_day_avg)) AS "Utilization"
+        FROM hospitals h
+        JOIN hospital_beds hb ON h.hospital_pk = hb.hospital_pk
+        GROUP BY state, city, collection_week
+        HAVING SUM(all_adult_hospital_inpatient_bed_occupied_7_day_avg) + SUM(all_pediatric_inpatient_bed_occupied_7_day_avg) + SUM(all_adult_hospital_beds_7_day_avg) + SUM(all_pediatric_inpatient_beds_7_day_avg) > 0
+        ORDER BY collection_week;""",
+        cn
+    )
+
+
+
+st.header('Records Loaded By Date')
 st.plotly_chart(
     pe.line(
         record_counts,
         x='date',
         y='Records Loaded',
-        title='Records Loaded by Date',
         labels={'date': 'Date'}
     ),
     use_container_width=True
 )
 
 # more beds in use than available?
+st.header('Hospital Beds Available')
 st.dataframe(bed_counts, use_container_width=True)
 
 # why so many values > 1?
+st.header('Beds In Use By Hospital Quality')
 st.plotly_chart(
     pe.box(
         beds_by_quality,
         x='Quality Rating',
         y='Beds In Use',
         labels={'hospital_pk': 'PK'},
-        title='Beds In Use by Hospital Quality Rating',
         log_y=True
     ),
     use_container_width=True
@@ -193,27 +232,25 @@ beds_used_fig.add_trace(
     secondary_y=True,
 )
 
-beds_used_fig.update_layout(
-    title_text="Beds Used Over Time",
-    showlegend=False
-)
+beds_used_fig.update_layout(showlegend=False)
 beds_used_fig.update_xaxes(title_text="Date")
 beds_used_fig.update_yaxes(title_text="Beds Used", secondary_y=False)
 beds_used_fig.update_yaxes(title_text="COVID Beds Used", secondary_y=True)
 
+st.header('Beds Used Over Time')
 st.plotly_chart(beds_used_fig, use_container_width=True)
 
-## HEATMAP
 
-covid_heatmap_data['label'] = 'COVID Cases: ' + \
-    covid_heatmap_data['COVID Cases'].astype(str) + \
-    '<br>' + covid_heatmap_data['city'] + ', ' + covid_heatmap_data['state']
+covid_heatmap_data['label'] = covid_heatmap_data['city'] + ', ' + \
+    covid_heatmap_data['state'] + '<br>' + 'COVID Cases: ' + \
+    covid_heatmap_data['COVID Cases'].astype(str) 
 
-heatmap = go.Figure(
+heatmap=go.Figure(
     data=go.Scattergeo(
         lon=covid_heatmap_data['long'],
         lat=covid_heatmap_data['lat'],
         text=covid_heatmap_data['label'],
+        hovertemplate='%{text}<extra></extra>',
         marker = dict(
             size = np.sqrt(covid_heatmap_data['COVID Cases'])*1.5,
             color = covid_heatmap_data['COVID Cases'], 
@@ -223,11 +260,46 @@ heatmap = go.Figure(
     )
 )
 heatmap.update_layout(
-    title='COVID Cases by City',
     geo_scope='usa',
     width=1000, 
-    height=800,
-    paper_bgcolor='rgba(0,0,0,0)',
-    plot_bgcolor='rgba(0,0,0,0)'
+    height=800
 )
+
+st.header('COVID Cases by City')
 st.plotly_chart(heatmap, use_container_width=True)
+
+
+st.header('No Data Reported This Week')
+st.dataframe(nonreporting_hospitals,  use_container_width=True)
+
+
+hosp_util_plot['addr'] = hosp_util_plot['city'] + ', ' + \
+    hosp_util_plot['state']
+# scaling the size a bit so we aren't overwhelmed with points.
+hosp_util_plot['size'] = np.power(hosp_util_plot['Utilization'], 3)
+
+util_over_time = pe.scatter_geo(
+    hosp_util_plot, 
+    lat='lat', 
+    lon='long', 
+    scope='usa',
+    color="Utilization",
+    color_continuous_scale=[[0, 'rgb(255,255,0)'], [1, 'rgb(255,0,0)']],
+    opacity = 0.6,
+    size='size',
+    hover_name="addr",
+    hover_data={
+        'lat': False,
+        'long': False,
+        'Date': False,
+        'size': False,
+        'Utilization':':.2f'
+    },
+    projection="albers usa", 
+    animation_frame="Date", 
+    width=1000, 
+    height=800
+)
+
+st.header('Hospital Utilization By City, Over Time')
+st.plotly_chart(util_over_time, use_container_width=True)
