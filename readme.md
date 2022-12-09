@@ -23,3 +23,13 @@ Sql Folder: Contains commands to insert and update data for all three tables (`h
 We created a streamlit dashboard on top of the data stored in SQL. This can be run by installing streamlit and running the following in the main folder:
 
 `streamlit run weekly_report.py`
+
+we mainly include 7 tables and plots below:
+
+1. A summary of how many hospital records were loaded in the most recent week, and how that compares to previous weeks.
+2. A table summarizing the number of adult and pediatric beds available this week, the number used, and the number used by patients with COVID, compared to the 4 most recent weeks
+3. A graph or table summarizing the fraction of beds currently in use by hospital quality rating, so we can compare high-quality and low-quality hospitals
+4. A plot of the total number of hospital beds used per week, over all time, split into all cases and COVID cases
+5. Heatmap of COVID cases as of current date
+6. A table of hospitals that did not report any data in the past week, their names, and the date they most recently reported data
+7. Graphs of hospital utilization (the percent of available beds being used) by state over time
